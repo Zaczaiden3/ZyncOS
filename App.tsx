@@ -11,8 +11,10 @@ import { extractPdfText } from './services/pdf';
 import { memoryStore } from './services/vectorDb';
 import { Send, Activity, Terminal, Command, Menu, ArrowDown, Paperclip, ImageIcon, Trash2, RefreshCw, Download, Lock, Network } from 'lucide-react';
 import { neuroSymbolicCore } from './cores/neuro-symbolic/NeuroSymbolicCore';
+import { LatticeNode, LatticeEdge } from './cores/neuro-symbolic/types';
 import { topologicalMemory } from './cores/memory/TopologicalMemory';
 import { personaSimulator } from './cores/simulation/PersonaSimulator';
+import { Users } from 'lucide-react';
 
 export default function App() {
   // Authentication State
@@ -41,6 +43,7 @@ export default function App() {
 
   // Neuro-Symbolic State
   const [neuroTrace, setNeuroTrace] = useState<string | null>(null);
+  const [activeLattice, setActiveLattice] = useState<{ nodes: LatticeNode[], edges: LatticeEdge[] }>({ nodes: [], edges: [] });
 
   const [messages, setMessages] = useState<Message[]>(() => {
     const saved = localStorage.getItem('ZYNC_CHAT_HISTORY');
@@ -389,6 +392,50 @@ export default function App() {
     localStorage.removeItem('ZYNC_AUTH_STATE');
   };
 
+  const handleSimulatePersonas = async () => {
+    // Find last user message
+    const lastUserMsg = [...messages].reverse().find(m => m.role === AIRole.USER);
+    if (!lastUserMsg) return;
+
+    const query = lastUserMsg.text;
+    const personas = personaSimulator.getPersonas();
+
+    setMobileMenuOpen(false);
+    setIsPaletteOpen(false);
+
+    // Announce Simulation
+    setMessages(prev => [...prev, {
+        id: `sim-start-${Date.now()}`,
+        role: AIRole.NEURO,
+        text: `**Initiating Counterfactual Persona Simulation**\nQuery: "${query}"\nRunning ${personas.length} concurrent simulation threads...`,
+        timestamp: Date.now(),
+        metrics: { latency: 10, tokens: 15, confidence: 100 }
+    }]);
+
+    // Run simulations sequentially for visual clarity (could be parallel)
+    for (const persona of personas) {
+        const msgId = `sim-${persona.id}-${Date.now()}`;
+        setMessages(prev => [...prev, {
+            id: msgId,
+            role: AIRole.REFLEX, // Use Reflex role for the output but styled differently via text
+            text: `**[Persona: ${persona.name}]**\nInitializing...`,
+            timestamp: Date.now(),
+            metrics: { latency: 0, tokens: 0, confidence: 0 }
+        }]);
+
+        const stream = generateReflexResponseStream(query, messages, null, null, persona.systemPrompt);
+        let fullText = `**[Persona: ${persona.name}]**\n`;
+        
+        for await (const update of stream) {
+            setMessages(prev => prev.map(m => m.id === msgId ? {
+                ...m,
+                text: `**[Persona: ${persona.name}]**\n${update.fullText}`,
+                metrics: { ...m.metrics, tokens: update.tokens, latency: 50 }
+            } : m));
+        }
+    }
+  };
+
   const commands: CommandOption[] = [
     {
       id: 'upload-image',
@@ -417,6 +464,13 @@ export default function App() {
       description: 'Export current session as text file',
       icon: <Download size={18} />,
       action: handleExportLogs
+    },
+    {
+      id: 'simulate-personas',
+      label: 'Simulate Personas',
+      description: 'Run counterfactual analysis on last query',
+      icon: <Users size={18} />,
+      action: handleSimulatePersonas
     },
     {
       id: 'status-report',
@@ -464,6 +518,7 @@ export default function App() {
       const reasoning = neuroSymbolicCore.reason(userText);
       setNeuroTrace(reasoning.reasoningTrace);
       setSystemStats(prev => ({ ...prev, neuroConfidence: reasoning.confidence * 100 }));
+      setActiveLattice({ nodes: reasoning.graph.nodes, edges: reasoning.graph.edges });
       
       // Visualizing the "Glass Box" - showing the logic lattice activation
       if (reasoning.confidence > 0.6) {
@@ -729,6 +784,7 @@ export default function App() {
           isReflexActive={isReflexActive}
           isMemoryActive={isMemoryActive}
           onClose={() => setMobileMenuOpen(false)}
+          lattice={activeLattice}
         />
       </div>
 

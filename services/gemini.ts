@@ -101,7 +101,8 @@ export async function* generateReflexResponseStream(
   currentInput: string,
   history: Message[],
   attachmentData?: string | null,
-  attachmentType?: 'image' | 'text' | null
+  attachmentType?: 'image' | 'text' | null,
+  systemPromptOverride?: string
 ): AsyncGenerator<StreamUpdate, void, unknown> {
   
   const modelId = "gemini-2.5-flash";
@@ -112,7 +113,7 @@ export async function* generateReflexResponseStream(
   ).join('\n');
 
   // Latency Optimization: Compact System Prompt with Formatting Rules
-  const systemPrompt = `
+  const systemPrompt = systemPromptOverride || `
     System: You are "Reflex", Zync's high-speed core.
     Priority: EXTREME SPEED & EFFICIENCY.
     Role: Provide immediate, accurate, data-backed answers. 
@@ -523,9 +524,11 @@ export async function* generateConsensusRecoveryStream(
  */
 export async function embedText(text: string): Promise<number[]> {
   try {
-    const model = ai.getGenerativeModel({ model: "text-embedding-004" });
-    const result = await model.embedContent(text);
-    return result.embedding.values;
+    const result = await ai.models.embedContent({
+      model: "text-embedding-004",
+      contents: [{ parts: [{ text }] }]
+    });
+    return result.embeddings?.[0]?.values || [];
   } catch (error) {
     console.error("Embedding Error:", error);
     return [];

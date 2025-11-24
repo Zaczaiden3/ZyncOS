@@ -2,15 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { SystemStats } from '../types';
 import { Activity, Database, Zap, List, BarChart3, Brain, Network, ChevronRight, X, Cpu } from 'lucide-react';
+import LatticeVisualizer from './LatticeVisualizer';
+import { LatticeNode, LatticeEdge } from '../cores/neuro-symbolic/types';
 
 interface SystemVisualizerProps {
   stats: SystemStats;
   isReflexActive: boolean;
   isMemoryActive: boolean;
   onClose?: () => void; // Optional close handler for mobile
+  lattice?: { nodes: LatticeNode[], edges: LatticeEdge[] };
 }
 
-const SystemVisualizer: React.FC<SystemVisualizerProps> = ({ stats, isReflexActive, isMemoryActive, onClose }) => {
+const SystemVisualizer: React.FC<SystemVisualizerProps> = ({ stats, isReflexActive, isMemoryActive, onClose, lattice }) => {
   
   const [displayTask, setDisplayTask] = useState(stats.currentTask);
   const [isFading, setIsFading] = useState(false);
@@ -96,6 +99,13 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({ stats, isReflexActi
       {/* Main Content Stack - Scrollable on mobile if needed */}
       <div className="flex flex-col gap-6 overflow-y-auto md:overflow-visible pr-2 md:pr-0">
         
+        {/* 3D Lattice Visualization (Glass Box) */}
+        {lattice && lattice.nodes.length > 0 && (
+            <div className="animate-in fade-in slide-in-from-top-4 duration-700">
+                <LatticeVisualizer nodes={lattice.nodes} edges={lattice.edges} isActive={true} />
+            </div>
+        )}
+
         {/* Network & Quota Status (New Granular Indicators) */}
         <div className="grid grid-cols-2 gap-3">
             <div className="bg-slate-900/40 p-2 rounded border border-slate-800 flex flex-col gap-1">
