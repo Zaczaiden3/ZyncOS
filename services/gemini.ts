@@ -516,3 +516,18 @@ export async function* generateConsensusRecoveryStream(
     yield { fullText: "System Critical: All redundancy layers failed. Please try again.", done: true, latency: 0 };
   }
 }
+
+/**
+ * Generate Embeddings
+ * Uses text-embedding-004 to create vector representations of text.
+ */
+export async function embedText(text: string): Promise<number[]> {
+  try {
+    const model = ai.getGenerativeModel({ model: "text-embedding-004" });
+    const result = await model.embedContent(text);
+    return result.embedding.values;
+  } catch (error) {
+    console.error("Embedding Error:", error);
+    return [];
+  }
+}

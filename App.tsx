@@ -7,6 +7,8 @@ import CommandPalette, { CommandOption } from './components/CommandPalette';
 import DataStreamBackground from './components/DataStreamBackground';
 import LoginPage from './components/LoginPage';
 import VoiceInput from './components/VoiceInput';
+import { extractPdfText } from './services/pdf';
+import { memoryStore } from './services/vectorDb';
 import { Send, Activity, Terminal, Command, Menu, ArrowDown, Paperclip, ImageIcon, Trash2, RefreshCw, Download, Lock } from 'lucide-react';
 
 export default function App() {
@@ -242,6 +244,22 @@ export default function App() {
       return;
     }
 
+    // Check for PDF
+    if (file.type === 'application/pdf') {
+        if (file.size > 10 * 1024 * 1024) { // 10MB limit for PDF
+            setUploadError('PDF size exceeds 10MB limit.');
+            return;
+        }
+        extractPdfText(file).then(text => {
+            setSelectedImage(text); // Reuse state for content
+            setAttachmentType('text');
+        }).catch(err => {
+            setUploadError('Failed to parse PDF.');
+            console.error(err);
+        });
+        return;
+    }
+
     // Check for text (allow common code extensions even if mime type is missing/generic)
     const isCodeFile = /\.(txt|md|json|csv|js|ts|tsx|jsx|py|html|css)$/i.test(file.name);
     
@@ -308,6 +326,8 @@ export default function App() {
         metrics: { latency: 5, tokens: 10, confidence: 100 }
       }
     ]);
+    // Optional: Clear vector memory too?
+    // memoryStore.clear(); 
   };
 
   const handleResetSystem = () => {
@@ -436,6 +456,23 @@ export default function App() {
       setSystemStats(prev => ({ ...prev, currentTask: 'DATA_INGESTION' }));
       const reflexStartTime = Date.now();
 
+      // --- MEMORY RETRIEVAL (RAG) ---
+      // Search for relevant past context before generating response
+      const relevantMemories = await memoryStore.search(userText);
+      const memoryContext = relevantMemories.map(m => `[Past Memory]: ${m.content}`).join('\n');
+      
+      // Inject memory context into history for the AI to see
+      // We don't display this to the user, but we pass it to the generator
+      const augmentedHistory = [...messages];
+      if (memoryContext) {
+          augmentedHistory.push({
+              id: 'memory-context',
+              role: AIRole.MEMORY,
+              text: `Relevant Context from Long-Term Memory:\n${memoryContext}`,
+              timestamp: Date.now()
+          });
+      }
+
       // Create placeholder for Reflex message
       const reflexMsgId = (Date.now() + 1).toString();
       setMessages(prev => [...prev, {
@@ -450,7 +487,7 @@ export default function App() {
       let finalReflexTokens = 0;
       
       // Stream Reflex Response
-      const reflexStream = generateReflexResponseStream(userText, messages, userImage, userAttachmentType);
+      const reflexStream = generateReflexResponseStream(userText, augmentedHistory, userImage, userAttachmentType);
       
       for await (const update of reflexStream) {
         reflexFullResponse = update.fullText;
@@ -519,7 +556,7 @@ export default function App() {
       let finalMemoryTokens = 0;
       const memoryStartTime = Date.now();
 
-      const memoryStream = generateMemoryAnalysisStream(userText, reflexFullResponse, messages, userImage, userAttachmentType);
+      const memoryStream = generateMemoryAnalysisStream(userText, reflexFullResponse, augmentedHistory, userImage, userAttachmentType);
 
       for await (const update of memoryStream) {
         memoryFullResponse = update.fullText;
@@ -547,6 +584,12 @@ export default function App() {
             lastMemoryTokens: finalMemoryTokens,
             memoryConfidence: Math.min(99, 85 + (update.fullText.length / 50)) 
          }));
+      }
+      
+      // --- MEMORY STORAGE ---
+      // Store the interaction in vector memory
+      if (userText.length > 10) {
+          await memoryStore.add(`User: ${userText}\nAI: ${reflexFullResponse}`);
       }
       
       clearInterval(taskInterval);
@@ -771,7 +814,7 @@ export default function App() {
                   type="file" 
                   ref={fileInputRef}
                   onChange={handleFileChange}
-                  accept="image/png, image/jpeg, image/webp, image/heic, .txt, .md, .json, .csv, .js, .ts, .tsx"
+                  accept="image/png, image/jpeg, image/webp, image/heic, .txt, .md, .json, .csv, .js, .ts, .tsx, .pdf"
                   className="hidden"
                 />
 
