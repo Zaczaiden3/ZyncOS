@@ -100,7 +100,8 @@ export async function generateSpeech(text: string, role: AIRole): Promise<string
 export async function* generateReflexResponseStream(
   currentInput: string,
   history: Message[],
-  imageData?: string | null
+  attachmentData?: string | null,
+  attachmentType?: 'image' | 'text' | null
 ): AsyncGenerator<StreamUpdate, void, unknown> {
   
   const modelId = "gemini-2.5-flash";
@@ -147,16 +148,22 @@ export async function* generateReflexResponseStream(
   // Construct Multimodal Content
   const parts: any[] = [{ text: systemPrompt }];
   
-  if (imageData) {
-    const parsed = parseBase64(imageData);
-    if (parsed) {
-      parts.push({
-        inlineData: {
-          mimeType: parsed.mimeType,
-          data: parsed.data
-        }
-      });
-      parts.push({ text: `Analyze image: ${currentInput}` });
+  if (attachmentData) {
+    if (attachmentType === 'image') {
+      const parsed = parseBase64(attachmentData);
+      if (parsed) {
+        parts.push({
+          inlineData: {
+            mimeType: parsed.mimeType,
+            data: parsed.data
+          }
+        });
+        parts.push({ text: `Analyze image: ${currentInput}` });
+      } else {
+         parts.push({ text: `Query: ${currentInput}` });
+      }
+    } else if (attachmentType === 'text') {
+       parts.push({ text: `[Attached File Content]:\n${attachmentData}\n\nQuery: ${currentInput}` });
     } else {
        parts.push({ text: `Query: ${currentInput}` });
     }
@@ -232,7 +239,8 @@ export async function* generateMemoryAnalysisStream(
   currentInput: string,
   reflexResponse: string,
   history: Message[],
-  imageData?: string | null
+  attachmentData?: string | null,
+  attachmentType?: 'image' | 'text' | null
 ): AsyncGenerator<StreamUpdate, void, unknown> {
   
   const modelId = "gemini-3-pro-preview";
@@ -328,18 +336,24 @@ export async function* generateMemoryAnalysisStream(
   // Construct Multimodal Content
   const parts: any[] = [{ text: systemPrompt }];
   
-  if (imageData) {
-    const parsed = parseBase64(imageData);
-    if (parsed) {
-      parts.push({
-        inlineData: {
-          mimeType: parsed.mimeType,
-          data: parsed.data
-        }
-      });
-      parts.push({ text: `User Query (about attached image): ${currentInput}` });
+  if (attachmentData) {
+    if (attachmentType === 'image') {
+      const parsed = parseBase64(attachmentData);
+      if (parsed) {
+        parts.push({
+          inlineData: {
+            mimeType: parsed.mimeType,
+            data: parsed.data
+          }
+        });
+        parts.push({ text: `User Query (about attached image): ${currentInput}` });
+      } else {
+         parts.push({ text: `User Query: ${currentInput}` });
+      }
+    } else if (attachmentType === 'text') {
+        parts.push({ text: `[Attached File Content]:\n${attachmentData}\n\nUser Query: ${currentInput}` });
     } else {
-       parts.push({ text: `User Query: ${currentInput}` });
+        parts.push({ text: `User Query: ${currentInput}` });
     }
   } else {
     parts.push({ text: `User Query: ${currentInput}` });

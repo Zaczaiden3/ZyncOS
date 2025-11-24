@@ -10,7 +10,8 @@ export interface Message {
   role: AIRole;
   text: string;
   timestamp: number;
-  attachment?: string; // Base64 string of the image
+  attachment?: string; // Base64 string of the image or text content
+  attachmentType?: 'image' | 'text'; // Type of the attachment
   metrics?: {
     latency?: number; // ms
     confidence?: number; // 0-100

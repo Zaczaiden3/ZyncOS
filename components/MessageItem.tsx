@@ -1,6 +1,6 @@
 import React from 'react';
 import { Message, AIRole } from '../types';
-import { User, Zap, BrainCircuit, Clock, CheckCircle2, Globe, ExternalLink, ShieldAlert, ImageIcon } from 'lucide-react';
+import { User, Zap, BrainCircuit, Clock, CheckCircle2, Globe, ExternalLink, ShieldAlert, ImageIcon, FileText } from 'lucide-react';
 import TTSPlayer from './TTSPlayer';
 
 interface MessageItemProps {
@@ -131,15 +131,27 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
             {/* Attachment Display */}
             {message.attachment && (
               <div className="mb-3 rounded-lg overflow-hidden border border-slate-700/50 bg-black/30 relative group">
-                <img 
-                  src={message.attachment} 
-                  alt="User attachment" 
-                  className="max-h-60 w-auto object-contain opacity-90 transition-opacity group-hover:opacity-100" 
-                />
-                <div className="absolute top-2 left-2 bg-black/60 backdrop-blur text-xs px-2 py-1 rounded text-slate-300 flex items-center gap-1">
-                    <ImageIcon size={10} />
-                    IMG_DATA
-                </div>
+                {message.attachmentType === 'text' ? (
+                   <div className="p-3 font-mono text-xs text-slate-300 bg-slate-900/50 max-h-60 overflow-y-auto whitespace-pre-wrap scrollbar-thin scrollbar-thumb-slate-700">
+                      <div className="flex items-center gap-2 mb-2 text-cyan-400 border-b border-slate-700 pb-1 sticky top-0 bg-slate-900/90 backdrop-blur-sm">
+                          <FileText size={12} />
+                          <span className="uppercase">Attached File Content</span>
+                      </div>
+                      {message.attachment}
+                   </div>
+                ) : (
+                    <>
+                        <img 
+                          src={message.attachment} 
+                          alt="User attachment" 
+                          className="max-h-60 w-auto object-contain opacity-90 transition-opacity group-hover:opacity-100" 
+                        />
+                        <div className="absolute top-2 left-2 bg-black/60 backdrop-blur text-xs px-2 py-1 rounded text-slate-300 flex items-center gap-1">
+                            <ImageIcon size={10} />
+                            IMG_DATA
+                        </div>
+                    </>
+                )}
               </div>
             )}
 

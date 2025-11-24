@@ -93,11 +93,29 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({ stats, isReflexActi
         </div>
       </div>
 
-      {/* Main Content Stack */}
-      <div className="flex flex-col gap-6">
+      {/* Main Content Stack - Scrollable on mobile if needed */}
+      <div className="flex flex-col gap-6 overflow-y-auto md:overflow-visible pr-2 md:pr-0">
+        
+        {/* Network & Quota Status (New Granular Indicators) */}
+        <div className="grid grid-cols-2 gap-3">
+            <div className="bg-slate-900/40 p-2 rounded border border-slate-800 flex flex-col gap-1">
+                <span className="text-[9px] text-slate-500 font-mono uppercase">Net Latency</span>
+                <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span className="text-xs font-mono text-slate-300">24ms</span>
+                </div>
+            </div>
+            <div className="bg-slate-900/40 p-2 rounded border border-slate-800 flex flex-col gap-1">
+                <span className="text-[9px] text-slate-500 font-mono uppercase">API Quota</span>
+                <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-500"></div>
+                    <span className="text-xs font-mono text-slate-300">84%</span>
+                </div>
+            </div>
+        </div>
         
         {/* Active Status HUD Cards */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Reflex Card */}
             <div className={`
                 relative p-4 rounded-xl border backdrop-blur-md transition-all duration-500 overflow-hidden group cursor-default

@@ -7,16 +7,24 @@ import CommandPalette, { CommandOption } from './components/CommandPalette';
 import DataStreamBackground from './components/DataStreamBackground';
 import LoginPage from './components/LoginPage';
 import VoiceInput from './components/VoiceInput';
-import { Send, Activity, Terminal, Command, Menu, ArrowDown, Paperclip, ImageIcon, Trash2, RefreshCw, Download } from 'lucide-react';
+import { Send, Activity, Terminal, Command, Menu, ArrowDown, Paperclip, ImageIcon, Trash2, RefreshCw, Download, Lock } from 'lucide-react';
 
 export default function App() {
   // Authentication State
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Authentication State
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('ZYNC_AUTH_STATE') === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('ZYNC_AUTH_STATE', String(isAuthenticated));
+  }, [isAuthenticated]);
   const [isSystemGlitching, setIsSystemGlitching] = useState(false);
 
   const [input, setInput] = useState('');
   // Image state
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [attachmentType, setAttachmentType] = useState<'image' | 'text' | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -26,22 +34,37 @@ export default function App() {
   // Voice Input State
   const [isListening, setIsListening] = useState(false);
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'init-1',
-      role: AIRole.REFLEX,
-      text: 'Zync Reflex Core Online. Rapid data streams active.',
-      timestamp: Date.now(),
-      metrics: { latency: 12, tokens: 45, confidence: 99 }
-    },
-    {
-      id: 'init-2',
-      role: AIRole.MEMORY,
-      text: 'Zync Memory Core Synchronized. Cognitive Core Upgrade: Contextual Synthesis Active. Developmental Process Framework loaded.',
-      timestamp: Date.now(),
-      metrics: { latency: 45, tokens: 120, confidence: 98 }
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const saved = localStorage.getItem('ZYNC_CHAT_HISTORY');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse chat history", e);
+      }
     }
-  ]);
+    return [
+      {
+        id: 'init-1',
+        role: AIRole.REFLEX,
+        text: 'Zync Reflex Core Online. Rapid data streams active.',
+        timestamp: Date.now(),
+        metrics: { latency: 12, tokens: 45, confidence: 99 }
+      },
+      {
+        id: 'init-2',
+        role: AIRole.MEMORY,
+        text: 'Zync Memory Core Synchronized. Cognitive Core Upgrade: Contextual Synthesis Active. Developmental Process Framework loaded.',
+        timestamp: Date.now(),
+        metrics: { latency: 45, tokens: 120, confidence: 98 }
+      }
+    ];
+  });
+
+  // Persistence Effect
+  useEffect(() => {
+    localStorage.setItem('ZYNC_CHAT_HISTORY', JSON.stringify(messages));
+  }, [messages]);
 
   // State for System Visualizer & Layout
   const [isReflexActive, setIsReflexActive] = useState(false);
@@ -199,25 +222,46 @@ export default function App() {
   const processFile = (file: File) => {
     setUploadError(null);
     
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'];
-    if (!validTypes.includes(file.type)) {
-      setUploadError('Invalid file type. Accepted: JPG, PNG, WEBP.');
-      return;
-    }
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      setUploadError('File size exceeds 5MB limit.');
+    const imageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'];
+    const textTypes = ['text/plain', 'text/markdown', 'application/json', 'text/csv', 'text/javascript', 'text/typescript'];
+    
+    // Check for image
+    if (imageTypes.includes(file.type)) {
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError('Image size exceeds 5MB limit.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setSelectedImage(reader.result);
+          setAttachmentType('image');
+        }
+      };
+      reader.readAsDataURL(file);
       return;
     }
 
-    // Convert to Base64
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        setSelectedImage(reader.result);
+    // Check for text (allow common code extensions even if mime type is missing/generic)
+    const isCodeFile = /\.(txt|md|json|csv|js|ts|tsx|jsx|py|html|css)$/i.test(file.name);
+    
+    if (textTypes.includes(file.type) || isCodeFile) {
+      if (file.size > 1 * 1024 * 1024) { // 1MB limit for text
+        setUploadError('Text file exceeds 1MB limit.');
+        return;
       }
-    };
-    reader.readAsDataURL(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setSelectedImage(reader.result); // We reuse this state for content
+          setAttachmentType('text');
+        }
+      };
+      reader.readAsText(file);
+      return;
+    }
+
+    setUploadError('Invalid file type. Supported: Images, Code, Text.');
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -241,6 +285,7 @@ export default function App() {
 
   const clearImage = () => {
     setSelectedImage(null);
+    setAttachmentType(null);
     setUploadError(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -311,6 +356,11 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('ZYNC_AUTH_STATE');
+  };
+
   const commands: CommandOption[] = [
     {
       id: 'upload-image',
@@ -346,6 +396,13 @@ export default function App() {
       description: 'View current operational status',
       icon: <Activity size={18} />,
       action: () => setMobileMenuOpen(true) 
+    },
+    {
+      id: 'logout',
+      label: 'Terminate Session',
+      description: 'Logout and return to secure gateway',
+      icon: <Lock size={18} />, // Using Lock icon imported from lucide-react
+      action: handleLogout
     }
   ];
 
@@ -355,6 +412,7 @@ export default function App() {
 
     const userText = input;
     const userImage = selectedImage;
+    const userAttachmentType = attachmentType;
     
     setInput('');
     clearImage();
@@ -367,6 +425,7 @@ export default function App() {
       role: AIRole.USER,
       text: userText,
       attachment: userImage || undefined,
+      attachmentType: userAttachmentType || undefined,
       timestamp: Date.now()
     };
     setMessages(prev => [...prev, userMsg]);
@@ -391,7 +450,7 @@ export default function App() {
       let finalReflexTokens = 0;
       
       // Stream Reflex Response
-      const reflexStream = generateReflexResponseStream(userText, messages, userImage);
+      const reflexStream = generateReflexResponseStream(userText, messages, userImage, userAttachmentType);
       
       for await (const update of reflexStream) {
         reflexFullResponse = update.fullText;
@@ -460,7 +519,7 @@ export default function App() {
       let finalMemoryTokens = 0;
       const memoryStartTime = Date.now();
 
-      const memoryStream = generateMemoryAnalysisStream(userText, reflexFullResponse, messages, userImage);
+      const memoryStream = generateMemoryAnalysisStream(userText, reflexFullResponse, messages, userImage, userAttachmentType);
 
       for await (const update of memoryStream) {
         memoryFullResponse = update.fullText;
@@ -679,11 +738,17 @@ export default function App() {
                 
                 {selectedImage && (
                   <div className="absolute bottom-full left-2 mb-2 p-2 bg-slate-900/90 border border-slate-700 rounded-lg backdrop-blur-md flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
-                    <div className="h-12 w-12 rounded overflow-hidden bg-black border border-slate-800 relative">
-                      <img src={selectedImage} alt="Preview" className="h-full w-full object-cover" />
+                    <div className="h-12 w-12 rounded overflow-hidden bg-black border border-slate-800 relative flex items-center justify-center">
+                      {attachmentType === 'image' ? (
+                        <img src={selectedImage} alt="Preview" className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="text-[8px] font-mono text-slate-400 p-1 overflow-hidden break-all leading-tight">
+                            {selectedImage?.slice(0, 40)}...
+                        </div>
+                      )}
                     </div>
                     <div className="flex flex-col">
-                       <span className="text-[10px] font-mono text-cyan-400 uppercase">Image Attached</span>
+                       <span className="text-[10px] font-mono text-cyan-400 uppercase">{attachmentType === 'image' ? 'Image Attached' : 'File Attached'}</span>
                        <button 
                          type="button"
                          onClick={clearImage} 
@@ -706,7 +771,7 @@ export default function App() {
                   type="file" 
                   ref={fileInputRef}
                   onChange={handleFileChange}
-                  accept="image/png, image/jpeg, image/webp, image/heic"
+                  accept="image/png, image/jpeg, image/webp, image/heic, .txt, .md, .json, .csv, .js, .ts, .tsx"
                   className="hidden"
                 />
 
