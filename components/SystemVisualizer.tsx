@@ -302,6 +302,18 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({ stats, isReflexActi
                     </div>
                     <span className="text-[10px] font-mono text-slate-300 w-8 text-right">{stats.memoryConfidence.toFixed(0)}%</span>
                 </div>
+                <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-mono text-emerald-400 w-8">NEU</span>
+                    <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden relative">
+                        {/* Shimmer Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-45 animate-shimmer z-10"></div>
+                        <div 
+                            className="bg-gradient-to-r from-emerald-600 to-emerald-400 h-full transition-all duration-500 ease-out shadow-[0_0_8px_rgba(16,185,129,0.5)] relative z-0" 
+                            style={{ width: `${stats.neuroConfidence}%` }}
+                        ></div>
+                    </div>
+                    <span className="text-[10px] font-mono text-slate-300 w-8 text-right">{stats.neuroConfidence.toFixed(0)}%</span>
+                </div>
             </div>
         </div>
 

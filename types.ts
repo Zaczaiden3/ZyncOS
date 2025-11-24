@@ -3,6 +3,7 @@ export enum AIRole {
   REFLEX = 'REFLEX', // Fast AI
   MEMORY = 'MEMORY', // Deep/Memory AI
   CONSENSUS = 'CONSENSUS', // Failsafe/Recovery AI
+  NEURO = 'NEURO', // Neuro-Symbolic Core
 }
 
 export interface Message {
@@ -31,6 +32,7 @@ export interface SystemStats {
   lastMemoryTokens: number;
   reflexConfidence: number;
   memoryConfidence: number;
+  neuroConfidence: number;
   currentTask: string;
 }
 

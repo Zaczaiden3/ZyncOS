@@ -16,25 +16,25 @@
 - [ ] **Testing & Quality Assurance**
   - [ ] Set up Vitest or Jest for unit testing utility functions.
   - [ ] Create component tests for `SystemVisualizer` and `MessageItem`.
-  - [ ] Implement E2E tests using Playwright or Cypress for the main chat flow.
 
-## Phase 2: Feature Enhancement
+## Phase 2: Zync AI Cores (New Architecture)
 
-- [ ] **Expanded Multimodal Capabilities**
-  - [x] Add support for text file analysis (TXT, MD, JSON, CSV, Code).
-  - [ ] Add support for PDF analysis.
-  - [x] Implement Audio Input/Output (Speech-to-Text and Text-to-Speech) using the browser API or Gemini's multimodal capabilities.
-  - [ ] Add "Vision" mode for real-time camera analysis (if applicable).
+- [x] **Neuro-Symbolic Fusion**
+  - [x] Implement `Lattice` for knowledge graph mapping.
+  - [x] Implement `NeuroSymbolicCore` for hybrid reasoning.
+  - [x] Integrate reasoning trace into `App.tsx` and UI.
 
-- [ ] **Advanced Memory Core**
-  - [ ] Implement a vector database (client-side like `voy` or server-side) for long-term memory.
-  - [ ] Allow the "Memory" core to reference past conversations (beyond the current session).
-  - [ ] Add "Knowledge Graph" visualization for the Memory core's analysis.
+- [x] **Persistent Topological Memory**
+  - [x] Implement `TopologicalMemory` with `GhostBranch` support.
+  - [x] Persist interactions to topological memory.
 
-- [ ] **UI/UX Polish**
-  - [x] Add more granular "System Status" indicators (e.g., network latency, API quota usage).
-  - [x] Improve mobile responsiveness for the "System Visualizer" (maybe a simplified view).
-  - [ ] Add keyboard shortcuts for power users (beyond Command Palette).
+- [x] **Counterfactual Persona Simulation**
+  - [x] Implement `PersonaSimulator` with multiple personas.
+
+- [x] **Visualization & Transparency**
+  - [x] Add "Confidence Shaders" to `MessageItem`.
+  - [x] Add Neuro Confidence metric to `SystemVisualizer`.
+  - [x] Create `NEURO` role for distinct visual feedback.
 
 ## Phase 3: Optimization & Deployment
 

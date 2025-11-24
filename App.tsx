@@ -9,7 +9,10 @@ import LoginPage from './components/LoginPage';
 import VoiceInput from './components/VoiceInput';
 import { extractPdfText } from './services/pdf';
 import { memoryStore } from './services/vectorDb';
-import { Send, Activity, Terminal, Command, Menu, ArrowDown, Paperclip, ImageIcon, Trash2, RefreshCw, Download, Lock } from 'lucide-react';
+import { Send, Activity, Terminal, Command, Menu, ArrowDown, Paperclip, ImageIcon, Trash2, RefreshCw, Download, Lock, Network } from 'lucide-react';
+import { neuroSymbolicCore } from './cores/neuro-symbolic/NeuroSymbolicCore';
+import { topologicalMemory } from './cores/memory/TopologicalMemory';
+import { personaSimulator } from './cores/simulation/PersonaSimulator';
 
 export default function App() {
   // Authentication State
@@ -35,6 +38,9 @@ export default function App() {
 
   // Voice Input State
   const [isListening, setIsListening] = useState(false);
+
+  // Neuro-Symbolic State
+  const [neuroTrace, setNeuroTrace] = useState<string | null>(null);
 
   const [messages, setMessages] = useState<Message[]>(() => {
     const saved = localStorage.getItem('ZYNC_CHAT_HISTORY');
@@ -85,6 +91,7 @@ export default function App() {
     lastMemoryTokens: 0,
     reflexConfidence: 98,
     memoryConfidence: 99,
+    neuroConfidence: 95,
     currentTask: 'SYSTEM_IDLE'
   });
 
@@ -356,6 +363,7 @@ export default function App() {
       lastMemoryTokens: 0,
       reflexConfidence: 98,
       memoryConfidence: 99,
+      neuroConfidence: 95,
       currentTask: 'SYSTEM_IDLE'
     });
   };
@@ -451,6 +459,23 @@ export default function App() {
     setMessages(prev => [...prev, userMsg]);
 
     try {
+      // --- NEURO-SYMBOLIC CORE PHASE ---
+      // 0. Neuro-Symbolic Reasoning (Pre-computation)
+      const reasoning = neuroSymbolicCore.reason(userText);
+      setNeuroTrace(reasoning.reasoningTrace);
+      setSystemStats(prev => ({ ...prev, neuroConfidence: reasoning.confidence * 100 }));
+      
+      // Visualizing the "Glass Box" - showing the logic lattice activation
+      if (reasoning.confidence > 0.6) {
+          setMessages(prev => [...prev, {
+              id: `neuro-${Date.now()}`,
+              role: AIRole.NEURO,
+              text: `**Neuro-Symbolic Lattice Activated**\n${reasoning.reasoningTrace}`,
+              timestamp: Date.now(),
+              metrics: { latency: 15, tokens: 25, confidence: reasoning.confidence * 100 }
+          }]);
+      }
+
       // --- REFLEX CORE PHASE ---
       setIsReflexActive(true);
       setSystemStats(prev => ({ ...prev, currentTask: 'DATA_INGESTION' }));
@@ -590,6 +615,10 @@ export default function App() {
       // Store the interaction in vector memory
       if (userText.length > 10) {
           await memoryStore.add(`User: ${userText}\nAI: ${reflexFullResponse}`);
+          
+          // Topological Memory Persistence
+          const memId = topologicalMemory.addMemory(userText, undefined, 1.0);
+          topologicalMemory.addMemory(reflexFullResponse, memId, systemStats.reflexConfidence / 100);
       }
       
       clearInterval(taskInterval);

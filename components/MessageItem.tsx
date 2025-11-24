@@ -1,6 +1,6 @@
 import React from 'react';
 import { Message, AIRole } from '../types';
-import { User, Zap, BrainCircuit, Clock, CheckCircle2, Globe, ExternalLink, ShieldAlert, ImageIcon, FileText } from 'lucide-react';
+import { User, Zap, BrainCircuit, Clock, CheckCircle2, Globe, ExternalLink, ShieldAlert, ImageIcon, FileText, Network } from 'lucide-react';
 import TTSPlayer from './TTSPlayer';
 
 interface MessageItemProps {
@@ -12,6 +12,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
   const isReflex = message.role === AIRole.REFLEX;
   const isMemory = message.role === AIRole.MEMORY;
   const isConsensus = message.role === AIRole.CONSENSUS;
+  const isNeuro = message.role === AIRole.NEURO;
 
   // Simple Markdown-like parser for formatting
   const parseBold = (text: string) => {
@@ -19,7 +20,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
     const parts = text.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, index) => {
       if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={index} className={`font-bold ${isReflex ? 'text-cyan-200' : isMemory ? 'text-fuchsia-200' : 'text-slate-200'}`}>{part.slice(2, -2)}</strong>;
+        return <strong key={index} className={`font-bold ${isReflex ? 'text-cyan-200' : isMemory ? 'text-fuchsia-200' : isNeuro ? 'text-emerald-200' : 'text-slate-200'}`}>{part.slice(2, -2)}</strong>;
       }
       return <span key={index}>{part}</span>;
     });
@@ -35,10 +36,10 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
           
           // Headers
           if (line.startsWith('### ')) {
-            return <h3 key={i} className={`text-sm font-bold mt-3 mb-1 uppercase tracking-wide opacity-90 ${isReflex ? 'text-cyan-300' : isMemory ? 'text-fuchsia-300' : 'text-amber-300'}`}>{parseBold(line.replace('### ', ''))}</h3>
+            return <h3 key={i} className={`text-sm font-bold mt-3 mb-1 uppercase tracking-wide opacity-90 ${isReflex ? 'text-cyan-300' : isMemory ? 'text-fuchsia-300' : isNeuro ? 'text-emerald-300' : 'text-amber-300'}`}>{parseBold(line.replace('### ', ''))}</h3>
           }
           if (line.startsWith('## ')) {
-             return <h2 key={i} className={`text-base font-bold mt-4 mb-2 ${isReflex ? 'text-cyan-100' : isMemory ? 'text-fuchsia-100' : 'text-amber-100'}`}>{parseBold(line.replace('## ', ''))}</h2>
+             return <h2 key={i} className={`text-base font-bold mt-4 mb-2 ${isReflex ? 'text-cyan-100' : isMemory ? 'text-fuchsia-100' : isNeuro ? 'text-emerald-100' : 'text-amber-100'}`}>{parseBold(line.replace('## ', ''))}</h2>
           }
           
           // List Items
@@ -46,7 +47,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
              const content = trimmed.substring(2);
              return (
                  <div key={i} className="flex gap-2 ml-1">
-                     <span className={`mt-1.5 w-1 h-1 rounded-full shrink-0 ${isReflex ? 'bg-cyan-500' : isMemory ? 'bg-fuchsia-500' : 'bg-slate-500'}`}></span>
+                     <span className={`mt-1.5 w-1 h-1 rounded-full shrink-0 ${isReflex ? 'bg-cyan-500' : isMemory ? 'bg-fuchsia-500' : isNeuro ? 'bg-emerald-500' : 'bg-slate-500'}`}></span>
                      <div className="leading-relaxed">{parseBold(content)}</div>
                  </div>
              )
@@ -84,11 +85,13 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
           ${isUser ? 'bg-slate-700 text-slate-300' : ''}
           ${isReflex ? 'bg-cyan-950 text-cyan-400 border border-cyan-500/30' : ''}
           ${isMemory ? 'bg-fuchsia-950 text-fuchsia-400 border border-fuchsia-500/30' : ''}
+          ${isNeuro ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/30' : ''}
           ${isConsensus ? 'bg-amber-950 text-amber-400 border border-amber-500/30 animate-pulse' : ''}
         `}>
           {isUser && <User size={16} className="md:w-5 md:h-5" />}
           {isReflex && <Zap size={16} className="md:w-5 md:h-5" />}
           {isMemory && <BrainCircuit size={16} className="md:w-5 md:h-5" />}
+          {isNeuro && <Network size={16} className="md:w-5 md:h-5" />}
           {isConsensus && <ShieldAlert size={16} className="md:w-5 md:h-5" />}
         </div>
 
@@ -98,9 +101,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
           {/* Header info */}
           <div className="flex items-center flex-wrap gap-x-2 mb-1 text-[10px] md:text-xs font-mono opacity-70">
             <span className={`font-bold ${
-              isReflex ? 'text-cyan-400' : isMemory ? 'text-fuchsia-400' : isConsensus ? 'text-amber-400' : 'text-slate-400'
+              isReflex ? 'text-cyan-400' : isMemory ? 'text-fuchsia-400' : isNeuro ? 'text-emerald-400' : isConsensus ? 'text-amber-400' : 'text-slate-400'
             }`}>
-              {isReflex ? 'REFLEX CORE' : isMemory ? 'MEMORY CORE' : isConsensus ? 'CONSENSUS PROTOCOL' : 'USER_CMD'}
+              {isReflex ? 'REFLEX CORE' : isMemory ? 'MEMORY CORE' : isNeuro ? 'NEURO-SYMBOLIC CORE' : isConsensus ? 'CONSENSUS PROTOCOL' : 'USER_CMD'}
             </span>
             {message.metrics && (
               <>
@@ -126,8 +129,12 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
             ${isUser ? 'bg-slate-800/80 text-slate-100 border-slate-700 rounded-tr-none' : ''}
             ${isReflex ? 'bg-cyan-950/20 text-cyan-50 border-cyan-500/20 rounded-tl-none' : ''}
             ${isMemory ? 'bg-fuchsia-950/20 text-fuchsia-50 border-fuchsia-500/20 rounded-tl-none' : ''}
+            ${isNeuro ? 'bg-emerald-950/20 text-emerald-50 border-emerald-500/20 rounded-tl-none' : ''}
             ${isConsensus ? 'bg-amber-950/20 text-amber-50 border-amber-500/20 rounded-tl-none' : ''}
-          `}>
+          `}
+          style={{
+             borderColor: message.metrics?.confidence ? `rgba(${isNeuro ? '16, 185, 129' : isReflex ? '6, 182, 212' : isMemory ? '217, 70, 239' : '255, 255, 255'}, ${message.metrics.confidence / 100})` : undefined
+          }}>
             {/* Attachment Display */}
             {message.attachment && (
               <div className="mb-3 rounded-lg overflow-hidden border border-slate-700/50 bg-black/30 relative group">
