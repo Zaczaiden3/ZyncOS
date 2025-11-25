@@ -1,0 +1,94 @@
+/* LoginPage.css */
+.login-container {
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.05) 0%, transparent 50%),
+    linear-gradient(rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.95)),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%230f172a' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.monolith-border {
+  box-shadow: 0 0 40px -10px rgba(6, 182, 212, 0.1);
+}
+
+.glitch-text {
+  position: relative;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #020617;
+}
+
+.glitch-text::before {
+  left: 2px;
+  text-shadow: -1px 0 #ef4444;
+  clip: rect(24px, 550px, 90px, 0);
+  animation: glitch-anim-2 3s infinite linear alternate-reverse;
+}
+
+.glitch-text::after {
+  left: -2px;
+  text-shadow: -1px 0 #06b6d4;
+  clip: rect(85px, 550px, 140px, 0);
+  animation: glitch-anim 2.5s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+  0% { clip: rect(12px, 9999px, 5px, 0); }
+  20% { clip: rect(108px, 9999px, 86px, 0); }
+  40% { clip: rect(25px, 9999px, 96px, 0); }
+  60% { clip: rect(64px, 9999px, 18px, 0); }
+  80% { clip: rect(89px, 9999px, 46px, 0); }
+  100% { clip: rect(13px, 9999px, 105px, 0); }
+}
+
+@keyframes glitch-anim-2 {
+  0% { clip: rect(65px, 9999px, 100px, 0); }
+  20% { clip: rect(22px, 9999px, 3px, 0); }
+  40% { clip: rect(88px, 9999px, 59px, 0); }
+  60% { clip: rect(4px, 9999px, 81px, 0); }
+  80% { clip: rect(36px, 9999px, 12px, 0); }
+  100% { clip: rect(95px, 9999px, 67px, 0); }
+}
+
+.input-bracket-l, .input-bracket-r {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-group:focus-within .input-bracket-l {
+  opacity: 1;
+  transform: translateX(-8px);
+  color: #06b6d4;
+}
+
+.input-group:focus-within .input-bracket-r {
+  opacity: 1;
+  transform: translateX(8px);
+  color: #06b6d4;
+}
+
+.social-btn {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.3) 100%);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.social-btn:hover {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.8) 0%, rgba(30, 41, 59, 0.5) 100%);
+  box-shadow: 0 0 15px -5px rgba(6, 182, 212, 0.3);
+}
+
+.barcode-line {
+  height: var(--bar-height, 50%);
+}
+
+.boot-progress-bar {
+  width: var(--progress-width, 0%);
+  transition: width 0.5s;
+}

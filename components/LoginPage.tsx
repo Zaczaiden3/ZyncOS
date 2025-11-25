@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Terminal, AlertCircle, Check, ArrowRight, Activity, Fingerprint, Lock, Mail, User, Cpu, Bug, Github } from 'lucide-react';
+import { Terminal, AlertCircle, Check, ArrowRight, Activity, Fingerprint, Lock, Mail, User, Cpu, Bug, Github, Shield } from 'lucide-react';
+import './LoginPage.css';
 
 interface LoginPageProps {
   onLogin: () => void;
@@ -99,7 +100,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGlitch }) => {
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center min-h-screen p-4 relative z-10 font-sans transition-all duration-500 ${status === 'SUCCESS' ? 'animate-warp-out' : ''} ${status === 'FAILURE' ? 'animate-glitch' : ''}`}>
+    <div className={`login-container flex flex-col items-center justify-center min-h-screen p-4 relative z-10 font-sans transition-all duration-500 ${status === 'SUCCESS' ? 'animate-warp-out' : ''} ${status === 'FAILURE' ? 'animate-glitch' : ''}`}>
       
       {/* MONOLITH CONTAINER */}
       <div className={`w-full max-w-md perspective-1000 relative transition-all duration-500 ${mode === 'signup' ? 'max-w-lg' : 'max-w-md'}`}>
@@ -107,51 +108,56 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGlitch }) => {
         {/* Breathing Border */}
         <div className={`absolute -inset-0.5 rounded-none bg-cyan-500/20 blur-sm transition-opacity duration-1000 ${status === 'FAILURE' ? 'bg-red-500/50 opacity-100' : 'animate-breathing-glow'}`}></div>
 
-        <div className="relative bg-slate-950/80 backdrop-blur-md border border-slate-800 p-8 shadow-2xl overflow-hidden">
+        <div className="monolith-border relative bg-slate-950/90 backdrop-blur-xl border border-slate-800 p-8 shadow-2xl overflow-hidden rounded-sm">
             
             {/* Top Bar / Status */}
-            <div className="flex justify-between items-start mb-10 font-mono text-[10px] tracking-widest text-slate-500">
+            <div className="flex justify-between items-start mb-10 font-mono text-[10px] tracking-widest text-slate-500 border-b border-slate-800/50 pb-2">
                 <div className="flex flex-col gap-1">
-                    <span className="uppercase text-cyan-500">SYSTEM_WAKE_SEQUENCE</span>
-                    <span>NODE: {userHash}</span>
+                    <span className="uppercase text-cyan-500 flex items-center gap-1"><Shield size={10} /> SYSTEM_WAKE_SEQUENCE</span>
+                    <span className="opacity-50">NODE_ID: {userHash.substring(0, 10)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${status === 'PROCESSING' ? 'bg-amber-400 animate-ping' : 'bg-emerald-500'}`}></span>
+                    <span className={`w-1.5 h-1.5 rounded-full ${status === 'PROCESSING' ? 'bg-amber-400 animate-ping' : 'bg-emerald-500'}`}></span>
                     {status === 'PROCESSING' ? (mode === 'signup' ? 'BOOTING...' : 'NEGOTIATING...') : 'READY'}
                 </div>
             </div>
 
             {/* Header */}
-            <div className="mb-12 text-center">
-                <h1 className="text-4xl font-mono font-bold text-slate-100 tracking-[0.15em] mb-2 glitch-text" data-text="ZYNC_OS">
+            <div className="mb-10 text-center relative">
+                <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-800 to-transparent -z-10"></div>
+                <h1 className="text-5xl font-mono font-bold text-slate-100 tracking-[0.15em] mb-2 glitch-text inline-block bg-slate-950 px-4" data-text="ZYNC_OS">
                     ZYNC<span className="text-cyan-500">_</span>OS
                 </h1>
-                <p className="text-[10px] font-mono text-slate-400 uppercase tracking-[0.3em]">
-                    Human-grade intuition
+                <p className="text-[9px] font-mono text-slate-400 uppercase tracking-[0.4em] mt-2">
+                    Human-grade intuition v2.4
                 </p>
             </div>
 
             {/* Form Inputs (Bracket Style) */}
-            <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+            <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
                 
                 {/* SIGNUP: Identity Card Metaphor Container */}
-                <div className={`transition-all duration-500 ${mode === 'signup' ? 'border border-slate-700/50 bg-slate-900/30 p-4 rounded-lg relative overflow-hidden' : ''}`}>
+                <div className={`transition-all duration-500 ${mode === 'signup' ? 'border border-slate-700/50 bg-slate-900/30 p-5 rounded-lg relative overflow-hidden' : ''}`}>
                     {mode === 'signup' && (
                         <>
                            {/* Holographic Stripe */}
-                           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-fuchsia-500 via-cyan-500 to-fuchsia-500 opacity-50"></div>
+                           <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-fuchsia-500 via-cyan-500 to-fuchsia-500 opacity-70"></div>
                            {/* Barcode Visual */}
-                           <div className="absolute bottom-2 right-4 opacity-20 pointer-events-none">
-                                <div className="flex gap-0.5 items-end h-8">
-                                    {[...Array(15)].map((_, i) => (
-                                        <div key={i} className="w-1 bg-white" style={{ height: `${Math.random() * 100}%` }}></div>
+                           <div className="absolute bottom-3 right-4 opacity-20 pointer-events-none">
+                                <div className="flex gap-0.5 items-end h-6">
+                                    {[...Array(20)].map((_, i) => (
+                                        <div 
+                                            key={i} 
+                                            className="w-0.5 bg-white barcode-line" 
+                                            style={{ '--bar-height': `${Math.random() * 100}%` } as React.CSSProperties}
+                                        ></div>
                                     ))}
                                 </div>
                            </div>
                         </>
                     )}
 
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                         {mode === 'signup' && (
                             <BracketInput 
                                 label="USER DESIGNATION" 
@@ -184,28 +190,31 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGlitch }) => {
 
                 {/* Identity Card / Terms (Signup) */}
                 {mode === 'signup' && (
-                    <div className="pt-2 border-t border-slate-800/50">
+                    <div className="pt-3 border-t border-slate-800/50 animate-in fade-in slide-in-from-top-2">
                          <div className="flex items-center gap-4 mb-4">
-                            <Fingerprint size={32} className="text-fuchsia-500/50" />
+                            <div className="p-2 bg-slate-900 rounded border border-slate-800">
+                                <Fingerprint size={24} className="text-fuchsia-500/70" />
+                            </div>
                             <div className="font-mono text-[9px] text-slate-500 leading-tight">
-                                GENERATING ID: <span className="text-fuchsia-400">{userHash}</span><br/>
+                                GENERATING ID: <span className="text-fuchsia-400 font-bold">{userHash}</span><br/>
                                 ENCRYPTION: SHA-256-R<br/>
-                                STATUS: UNVERIFIED
+                                STATUS: <span className="text-amber-500">UNVERIFIED</span>
                             </div>
                          </div>
-                         <label className="flex items-center gap-3 cursor-pointer group">
-                             <div className={`w-3 h-3 border border-slate-600 flex items-center justify-center transition-colors ${agreedToTerms ? 'bg-fuchsia-500 border-fuchsia-500' : 'bg-transparent'}`}>
+                         <label className="flex items-center gap-3 cursor-pointer group p-2 hover:bg-slate-900/50 rounded transition-colors">
+                             <div className={`w-3.5 h-3.5 border border-slate-600 flex items-center justify-center transition-colors rounded-sm ${agreedToTerms ? 'bg-fuchsia-500 border-fuchsia-500' : 'bg-transparent'}`}>
                                  {agreedToTerms && <Check size={10} className="text-black" />}
                              </div>
-                             <span className="text-[10px] font-mono text-slate-500 group-hover:text-cyan-400 transition-colors">ACCEPT PROTOCOLS</span>
+                             <span className="text-[10px] font-mono text-slate-500 group-hover:text-cyan-400 transition-colors">ACCEPT NEURAL PROTOCOLS</span>
                          </label>
                     </div>
                 )}
                 
                 {/* Error Display */}
                 {errorMsg && (
-                    <div className="absolute top-0 left-0 right-0 bg-red-500/10 border-b border-red-500/50 p-2 text-[10px] font-mono text-red-400 flex items-center justify-center gap-2 animate-glitch">
-                        <AlertCircle size={12} /> {errorMsg}
+                    <div className="bg-red-500/10 border-l-2 border-red-500 p-3 text-[10px] font-mono text-red-400 flex items-center gap-3 animate-glitch rounded-r">
+                        <AlertCircle size={14} className="shrink-0" /> 
+                        <span>{errorMsg}</span>
                     </div>
                 )}
 
@@ -215,7 +224,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGlitch }) => {
                 )}
 
                 {/* Action Button */}
-                <div className="pt-4">
+                <div className="pt-2">
                     <DecodingButton 
                         text={mode === 'signin' ? 'INITIALIZE' : 'ESTABLISH LINK'} 
                         isLoading={status === 'PROCESSING'}
@@ -224,29 +233,29 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGlitch }) => {
 
                 {/* Social Sign-In Protocol */}
                 {mode === 'signin' && (
-                    <>
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
                         <div className="relative my-6">
-                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-800/80"></div></div>
-                            <div className="relative flex justify-center text-[9px] font-mono uppercase text-slate-600 bg-slate-950/80 px-2 tracking-widest">
+                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-800/60"></div></div>
+                            <div className="relative flex justify-center text-[9px] font-mono uppercase text-slate-600 bg-slate-950 px-2 tracking-widest">
                                 [ Neural_Link_Protocol ]
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-3">
                             <SocialButton 
                                 icon={<GoogleIcon />} 
                                 label="GOOGLE" 
-                                hoverClass="hover:border-red-500/50 hover:text-red-400 hover:bg-red-500/10" 
+                                hoverClass="hover:border-red-500/50 hover:text-red-400 hover:bg-red-500/5" 
                                 onClick={() => triggerFailure("API_GATEWAY_TIMEOUT")} // Simulation
                             />
                             <SocialButton 
                                 icon={<Github size={16} />} 
                                 label="GITHUB" 
-                                hoverClass="hover:border-white/50 hover:text-white hover:bg-white/10"
+                                hoverClass="hover:border-white/50 hover:text-white hover:bg-white/5"
                                 onClick={() => triggerFailure("SSH_KEY_REJECTED")} // Simulation
                             />
                         </div>
-                    </>
+                    </div>
                 )}
 
             </form>
@@ -259,9 +268,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGlitch }) => {
                         setMode(mode === 'signin' ? 'signup' : 'signin');
                         setErrorMsg(null);
                     }}
-                    className="text-[10px] font-mono text-slate-600 hover:text-cyan-400 uppercase tracking-widest transition-colors"
+                    className="text-[10px] font-mono text-slate-600 hover:text-cyan-400 uppercase tracking-widest transition-colors border-b border-transparent hover:border-cyan-500/50 pb-0.5"
                  >
-                    {mode === 'signin' ? '[ CREATE_UPLINK ]' : '[ RETURN_LOGIN ]'}
+                    {mode === 'signin' ? '[ CREATE_NEW_UPLINK ]' : '[ RETURN_TO_LOGIN ]'}
                  </button>
 
                  {/* Test User Button */}
@@ -269,9 +278,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGlitch }) => {
                     <button
                         type="button"
                         onClick={handleTestLogin}
-                        className="text-[9px] font-mono text-slate-700 hover:text-emerald-500 uppercase tracking-widest transition-colors flex items-center gap-1 mx-auto opacity-60 hover:opacity-100"
+                        className="text-[9px] font-mono text-slate-700 hover:text-emerald-500 uppercase tracking-widest transition-colors flex items-center gap-1.5 mx-auto opacity-60 hover:opacity-100 group"
                     >
-                        <Bug size={10} />
+                        <Bug size={10} className="group-hover:rotate-12 transition-transform" />
                         [ EXECUTE_TEST_PROTOCOL ]
                     </button>
                  </div>
@@ -298,8 +307,8 @@ const SocialButton = ({ icon, label, hoverClass, onClick }: { icon: React.ReactN
         type="button"
         onClick={onClick}
         className={`
-            flex items-center justify-center gap-3 py-2.5 px-4 
-            bg-slate-900/50 border border-slate-700 
+            social-btn flex items-center justify-center gap-3 py-3 px-4 
+            border border-slate-800 rounded
             text-slate-400 font-mono text-xs tracking-widest 
             transition-all duration-300
             hover:scale-[1.02] active:scale-95
@@ -329,7 +338,10 @@ const SystemBootLoader = () => {
                 <span>{Math.min(100, (step + 1) * 33)}%</span>
             </div>
             <div className="h-1 bg-slate-800 w-full overflow-hidden rounded-full">
-                <div className="h-full bg-gradient-to-r from-fuchsia-600 to-cyan-400 animate-[shimmer_1.5s_infinite]" style={{ width: `${(step + 1) * 33}%`, transition: 'width 0.5s' }}></div>
+                <div 
+                    className="h-full bg-gradient-to-r from-fuchsia-600 to-cyan-400 animate-[shimmer_1.5s_infinite] boot-progress-bar" 
+                    style={{ '--progress-width': `${(step + 1) * 33}%` } as React.CSSProperties}
+                ></div>
             </div>
         </div>
     );
@@ -340,17 +352,17 @@ const BracketInput = ({ label, value, onChange, type = "text", placeholder, icon
     const [touched, setTouched] = useState(false);
 
     return (
-        <div className="group">
-            <label className={`block text-[10px] font-mono tracking-[0.2em] mb-2 transition-colors ${focused ? 'text-cyan-400' : 'text-slate-600'}`}>
+        <div className="group input-group">
+            <label className={`block text-[10px] font-mono tracking-[0.2em] mb-2 transition-colors duration-300 ${focused ? 'text-cyan-400' : 'text-slate-500'}`}>
                 {label}
             </label>
             <div className="relative flex items-center">
                 
                 {/* Left Bracket */}
-                <span className={`absolute left-0 text-lg font-mono font-light transition-all duration-300 ${focused ? 'opacity-100 text-cyan-500 -translate-x-2' : 'opacity-0 translate-x-0'}`}>[</span>
+                <span className={`input-bracket-l absolute left-0 text-lg font-mono font-light opacity-0 translate-x-0 text-slate-700`}>[</span>
                 
                 {/* Icon */}
-                <div className={`absolute left-0 transition-all duration-300 ${focused ? 'opacity-0' : 'opacity-50 text-slate-500'}`}>
+                <div className={`absolute left-0 transition-all duration-300 ${focused ? 'opacity-0 -translate-x-2' : 'opacity-50 text-slate-500 translate-x-0'}`}>
                     {icon}
                 </div>
 
@@ -364,20 +376,20 @@ const BracketInput = ({ label, value, onChange, type = "text", placeholder, icon
                     onFocus={() => setFocused(true)}
                     onBlur={() => setFocused(false)}
                     className={`
-                        w-full bg-transparent border-b border-slate-700 py-2 pl-6 pr-2 
+                        w-full bg-transparent border-b border-slate-800 py-2 pl-6 pr-2 
                         font-mono text-sm text-slate-200 placeholder-slate-700 outline-none
                         transition-all duration-300
-                        ${focused ? 'border-cyan-500 pl-2' : ''}
+                        ${focused ? 'border-cyan-500 pl-3' : 'hover:border-slate-700'}
                     `}
                     placeholder={focused ? '' : placeholder}
                 />
 
                 {/* Right Bracket */}
-                <span className={`absolute right-0 text-lg font-mono font-light transition-all duration-300 ${focused ? 'opacity-100 text-cyan-500 translate-x-2' : 'opacity-0 translate-x-0'}`}>]</span>
+                <span className={`input-bracket-r absolute right-0 text-lg font-mono font-light opacity-0 translate-x-0 text-slate-700`}>]</span>
                 
-                {/* Typing Micro-Flash (Simplified) */}
+                {/* Typing Micro-Flash */}
                 {focused && value.length > 0 && (
-                     <div className="absolute right-0 bottom-0 w-2 h-2 bg-cyan-400 blur-sm animate-ping opacity-50"></div>
+                     <div className="absolute right-2 bottom-2 w-1.5 h-1.5 bg-cyan-400 blur-[2px] animate-pulse opacity-70"></div>
                 )}
             </div>
         </div>
@@ -414,7 +426,7 @@ const DecodingButton = ({ text, isLoading }: { text: string, isLoading: boolean 
             disabled={isLoading}
             onMouseEnter={scramble}
             className={`
-                w-full h-12 relative overflow-hidden bg-slate-900 border border-slate-700 hover:border-cyan-500 transition-all group
+                w-full h-12 relative overflow-hidden bg-slate-900 border border-slate-700 hover:border-cyan-500 transition-all group rounded-sm
                 ${isLoading ? 'opacity-80 cursor-wait' : ''}
             `}
         >
@@ -435,8 +447,8 @@ const DecodingButton = ({ text, isLoading }: { text: string, isLoading: boolean 
             </div>
             
             {/* Corner Accents */}
-            <div className="absolute top-0 left-0 w-1 h-1 bg-slate-500 group-hover:bg-cyan-500 transition-colors"></div>
-            <div className="absolute bottom-0 right-0 w-1 h-1 bg-slate-500 group-hover:bg-cyan-500 transition-colors"></div>
+            <div className="absolute top-0 left-0 w-1 h-1 bg-slate-600 group-hover:bg-cyan-500 transition-colors"></div>
+            <div className="absolute bottom-0 right-0 w-1 h-1 bg-slate-600 group-hover:bg-cyan-500 transition-colors"></div>
         </button>
     )
 }

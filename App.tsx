@@ -718,7 +718,7 @@ export default function App() {
       }]);
       
       try {
-        const consensusStream = generateConsensusRecoveryStream(userText);
+        const consensusStream = generateConsensusRecoveryStream(userText, error instanceof Error ? error.message : String(error));
         
         for await (const update of consensusStream) {
              setMessages(prev => prev.map(msg => 
@@ -737,8 +737,20 @@ export default function App() {
         }
       } catch (recoveryError) {
          setMessages(prev => prev.map(msg => 
-            msg.id === consensusMsgId ? { ...msg, text: "System Critical: Automatic recovery failed." } : msg
+            msg.id === consensusMsgId ? { 
+                ...msg, 
+                text: "**SYSTEM CRITICAL**: Automatic recovery failed.\n\nManual reboot recommended.",
+                role: AIRole.CONSENSUS 
+            } : msg
          ));
+         // Add a system message suggesting reboot
+         setMessages(prev => [...prev, {
+            id: `sys-reboot-${Date.now()}`,
+            role: AIRole.REFLEX,
+            text: "⚠️ **Core Desynchronization Persists**\nPlease execute `[Reboot Core System]` from the command palette.",
+            timestamp: Date.now(),
+            metrics: { latency: 0, tokens: 0, confidence: 0 }
+         }]);
       }
 
       setSystemStats(prev => ({ ...prev, currentTask: 'RECOVERY_COMPLETE' }));

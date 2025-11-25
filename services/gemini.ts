@@ -373,7 +373,8 @@ export async function* generateMemoryAnalysisStream(
  * Triggered when standard cores fail. Simulates a dialogue between cores to find a solution.
  */
 export async function* generateConsensusRecoveryStream(
-  currentInput: string
+  currentInput: string,
+  errorContext?: string
 ): AsyncGenerator<StreamUpdate, void, unknown> {
   
   // Use Flash for fast recovery
@@ -382,6 +383,7 @@ export async function* generateConsensusRecoveryStream(
   const prompt = `
     System: ALERT. CRITICAL FAILURE IN PRIMARY CORES.
     Context: Both 'Reflex' and 'Memory' cores failed to generate a response for the user's query.
+    Error Trace: ${errorContext || "Unknown internal exception"}
     Role: You are the "Consensus Protocol", a failsafe AI mechanism.
     Task:
     1. Initiate a brief, rapid dialogue between the simulated 'Reflex' and 'Memory' nodes.
