@@ -94,16 +94,12 @@ export async function generateSpeech(text: string, role: AIRole): Promise<string
 }
 
 // Model Constants
-const MODEL_REFLEX = "gemini-2.5-flash";
+const MODEL_REFLEX = "gemini-1.5-flash";
 const MODEL_MEMORY = "gemini-2.0-flash-thinking-exp-01-21"; // Upgraded to Thinking Experimental for better reasoning
-const MODEL_CONSENSUS = "gemini-2.5-flash";
+const MODEL_CONSENSUS = "gemini-1.5-flash";
 const MODEL_EMBEDDING = "text-embedding-004";
-const MODEL_TTS = "gemini-2.5-flash-preview-tts";
+const MODEL_TTS = "gemini-2.0-flash-exp";
 
-/**
- * The Reflex Core: Streaming Version
- * Uses Gemini 2.5 Flash for instant, high-speed responses.
- */
 export async function* generateReflexResponseStream(
   currentInput: string,
   history: Message[],
