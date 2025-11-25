@@ -310,10 +310,7 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
                       </div>
                   </div>
                   <div className="w-full bg-slate-800/50 h-1.5 rounded-full overflow-hidden shadow-inner mt-1.5">
-                      <div 
-                          className="reflex-bar bg-gradient-to-r from-cyan-600 to-cyan-400 h-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(6,182,212,0.5)]" 
-                          style={{ '--reflex-width': `${Math.min((safeStats.lastReflexTokens / 8192) * 100, 100)}%` } as React.CSSProperties}
-                      ></div>
+                      <ReflexBar widthPercentage={Math.min((safeStats.lastReflexTokens / 8192) * 100, 100)} />
                   </div>
               </div>
               {/* Memory Bar */}
@@ -326,10 +323,7 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
                       </div>
                   </div>
                   <div className="w-full bg-slate-800/50 h-1.5 rounded-full overflow-hidden shadow-inner mt-1.5">
-                      <div 
-                          className="memory-bar bg-gradient-to-r from-fuchsia-600 to-fuchsia-400 h-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(232,121,249,0.5)]" 
-                          style={{ '--memory-width': `${Math.min((safeStats.lastMemoryTokens / 8192) * 100, 100)}%` } as React.CSSProperties}
-                      ></div>
+                      <MemoryBar widthPercentage={Math.min((safeStats.lastMemoryTokens / 8192) * 100, 100)} />
                   </div>
               </div>
               </div>
@@ -344,24 +338,9 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
                   <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
                   
                   <div className="relative z-10 w-full h-full flex items-end justify-between gap-1">
-                      {safeStats.memoryDepth.map((depth, index) => {
-                          const baseDuration = 1.5 + (index * 1337 % 2000) / 1000;
-                          const duration = isHovered ? baseDuration * 0.2 : baseDuration;
-
-                          return (
-                          <div 
-                              key={index} 
-                              style={{ 
-                                  '--node-height': `${Math.max(5, depth)}%`,
-                                  '--anim-duration': `${duration}s`,
-                                  '--anim-delay': `-${(index * 997 % 2000) / 1000}s`
-                              } as React.CSSProperties}
-                              className={`
-                                  topology-node flex-1 min-w-[4px] rounded-t-sm bg-fuchsia-500/20 border-t border-fuchsia-500/30 transition-all duration-700 ease-out origin-bottom
-                                  ${safeStats.currentTask === 'SYSTEM_IDLE' ? 'animate-neural-bar' : ''}
-                              `}
-                          ></div>
-                      )})}
+                      {safeStats.memoryDepth.map((depth, index) => (
+                          <TopologyNode key={index} depth={depth} index={index} isHovered={isHovered} currentTask={safeStats.currentTask} />
+                      ))}
                   </div>
               </div>
           </div>
@@ -377,10 +356,10 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
                         <span className="text-[10px] font-mono text-cyan-400 w-8">REF</span>
                         <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden relative">
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-45 animate-shimmer z-10"></div>
-                            <div 
-                                className="conf-bar bg-gradient-to-r from-cyan-600 to-cyan-400 h-full transition-all duration-500 ease-out shadow-[0_0_8px_rgba(34,211,238,0.5)] relative z-0" 
-                                style={{ '--conf-width': `${safeStats.reflexConfidence}%` } as React.CSSProperties}
-                            ></div>
+                            <ConfBar 
+                                width={safeStats.reflexConfidence} 
+                                className="conf-bar bg-gradient-to-r from-cyan-600 to-cyan-400 h-full transition-all duration-500 ease-out shadow-[0_0_8px_rgba(34,211,238,0.5)] relative z-0"
+                            />
                         </div>
                         <span className="text-[10px] font-mono text-slate-300 w-8 text-right">{safeStats.reflexConfidence.toFixed(0)}%</span>
                     </div>
@@ -388,10 +367,10 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
                         <span className="text-[10px] font-mono text-fuchsia-400 w-8">MEM</span>
                         <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden relative">
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-45 animate-shimmer z-10"></div>
-                            <div 
-                                className="conf-bar bg-gradient-to-r from-fuchsia-600 to-fuchsia-400 h-full transition-all duration-500 ease-out shadow-[0_0_8px_rgba(232,121,249,0.5)] relative z-0" 
-                                style={{ '--conf-width': `${safeStats.memoryConfidence}%` } as React.CSSProperties}
-                            ></div>
+                            <ConfBar 
+                                width={safeStats.memoryConfidence} 
+                                className="conf-bar bg-gradient-to-r from-fuchsia-600 to-fuchsia-400 h-full transition-all duration-500 ease-out shadow-[0_0_8px_rgba(232,121,249,0.5)] relative z-0"
+                            />
                         </div>
                         <span className="text-[10px] font-mono text-slate-300 w-8 text-right">{safeStats.memoryConfidence.toFixed(0)}%</span>
                     </div>
@@ -399,10 +378,10 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
                         <span className="text-[10px] font-mono text-emerald-400 w-8">NEU</span>
                         <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden relative">
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-45 animate-shimmer z-10"></div>
-                            <div 
-                                className="conf-bar bg-gradient-to-r from-emerald-600 to-emerald-400 h-full transition-all duration-500 ease-out shadow-[0_0_8px_rgba(16,185,129,0.5)] relative z-0" 
-                                style={{ '--conf-width': `${safeStats.neuroConfidence}%` } as React.CSSProperties}
-                            ></div>
+                            <ConfBar 
+                                width={safeStats.neuroConfidence} 
+                                className="conf-bar bg-gradient-to-r from-emerald-600 to-emerald-400 h-full transition-all duration-500 ease-out shadow-[0_0_8px_rgba(16,185,129,0.5)] relative z-0"
+                            />
                         </div>
                         <span className="text-[10px] font-mono text-slate-300 w-8 text-right">{safeStats.neuroConfidence.toFixed(0)}%</span>
                     </div>
@@ -473,3 +452,50 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
 };
 
 export default SystemVisualizer;
+
+const ReflexBar = ({ widthPercentage }: { widthPercentage: number }) => {
+    const ref = React.useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (ref.current) ref.current.style.setProperty('--reflex-width', `${widthPercentage}%`);
+    }, [widthPercentage]);
+    return <div ref={ref} className="reflex-bar bg-gradient-to-r from-cyan-600 to-cyan-400 h-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(6,182,212,0.5)]"></div>;
+};
+
+const MemoryBar = ({ widthPercentage }: { widthPercentage: number }) => {
+    const ref = React.useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (ref.current) ref.current.style.setProperty('--memory-width', `${widthPercentage}%`);
+    }, [widthPercentage]);
+    return <div ref={ref} className="memory-bar bg-gradient-to-r from-fuchsia-600 to-fuchsia-400 h-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(232,121,249,0.5)]"></div>;
+};
+
+const ConfBar = ({ width, className }: { width: number, className: string }) => {
+    const ref = React.useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (ref.current) ref.current.style.setProperty('--conf-width', `${width}%`);
+    }, [width]);
+    return <div ref={ref} className={className}></div>;
+};
+
+const TopologyNode = ({ depth, index, isHovered, currentTask }: { depth: number, index: number, isHovered: boolean, currentTask: string }) => {
+    const ref = React.useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (ref.current) {
+            const baseDuration = 1.5 + (index * 1337 % 2000) / 1000;
+            const duration = isHovered ? baseDuration * 0.2 : baseDuration;
+            ref.current.style.setProperty('--node-height', `${Math.max(5, depth)}%`);
+            ref.current.style.setProperty('--anim-duration', `${duration}s`);
+            ref.current.style.setProperty('--anim-delay', `-${(index * 997 % 2000) / 1000}s`);
+        }
+    }, [depth, index, isHovered]);
+
+    return (
+        <div 
+            ref={ref}
+            className={`
+                topology-node flex-1 min-w-[4px] rounded-t-sm bg-fuchsia-500/20 border-t border-fuchsia-500/30 transition-all duration-700 ease-out origin-bottom
+                ${currentTask === 'SYSTEM_IDLE' ? 'animate-neural-bar' : ''}
+            `}
+        ></div>
+    );
+};

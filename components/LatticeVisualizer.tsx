@@ -69,51 +69,14 @@ const LatticeVisualizer: React.FC<LatticeVisualizerProps> = ({ nodes, edges, isA
           const start = nodePositions.get(edge.sourceId);
           const end = nodePositions.get(edge.targetId);
           if (!start || !end) return null;
-
-          // Calculate 3D line (simplified as 2D projection for CSS or using thin divs)
-          // For true 3D lines in CSS, we need to calculate length and angles.
-          const dx = end.x - start.x;
-          const dy = end.y - start.y;
-          const dz = end.z - start.z;
-          const length = Math.sqrt(dx*dx + dy*dy + dz*dz);
-          
-          // Midpoint
-          const mx = (start.x + end.x) / 2;
-          const my = (start.y + end.y) / 2;
-          const mz = (start.z + end.z) / 2;
-
-          // Rotation (Simplified - accurate 3D line rotation in CSS is complex, using opacity to simulate depth)
-          return (
-                
-            <div
-                key={`edge-${i}`}
-                className="lattice-edge absolute bg-emerald-500/30 h-[1px] transform-gpu w-[var(--edge-width)]"
-                style={{
-                    '--edge-width': `${length}px`,
-                    '--edge-transform': `translate3d(${mx}px, ${my}px, ${mz}px) rotateY(${Math.atan2(dz, dx)}rad) rotateZ(${Math.atan2(dy, dx)}rad) translate(-50%, -50%)`,
-                } as React.CSSProperties}
-             />
-          );
+          return <LatticeEdgeItem key={`edge-${i}`} start={start} end={end} />;
         })}
 
         {/* Render Nodes */}
         {nodes.map((node) => {
           const pos = nodePositions.get(node.id);
           if (!pos) return null;
-          return (
-            <div
-              key={node.id}
-              className="lattice-node absolute transform-gpu flex items-center justify-center group"
-              style={{
-                '--node-transform': `translate3d(${pos.x}px, ${pos.y}px, ${pos.z}px)`,
-              } as React.CSSProperties}
-            >
-              <div className="w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.8)] group-hover:scale-150 transition-transform"></div>
-              <div className="absolute top-3 left-1/2 -translate-x-1/2 text-[8px] text-emerald-200 opacity-0 group-hover:opacity-100 whitespace-nowrap bg-black/80 px-1 rounded pointer-events-none">
-                {node.label}
-              </div>
-            </div>
-          );
+          return <LatticeNodeItem key={node.id} node={node} pos={pos} />;
         })}
       </div>
       
@@ -124,3 +87,46 @@ const LatticeVisualizer: React.FC<LatticeVisualizerProps> = ({ nodes, edges, isA
 };
 
 export default LatticeVisualizer;
+
+const LatticeEdgeItem: React.FC<{ start: { x: number, y: number, z: number }, end: { x: number, y: number, z: number } }> = ({ start, end }) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      const dz = end.z - start.z;
+      const length = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      const mx = (start.x + end.x) / 2;
+      const my = (start.y + end.y) / 2;
+      const mz = (start.z + end.z) / 2;
+
+      ref.current.style.setProperty('--edge-width', `${length}px`);
+      ref.current.style.setProperty('--edge-transform', `translate3d(${mx}px, ${my}px, ${mz}px) rotateY(${Math.atan2(dz, dx)}rad) rotateZ(${Math.atan2(dy, dx)}rad) translate(-50%, -50%)`);
+    }
+  }, [start, end]);
+
+  return <div ref={ref} className="lattice-edge absolute bg-emerald-500/30 h-[1px] transform-gpu w-[var(--edge-width)]" />;
+};
+
+const LatticeNodeItem: React.FC<{ node: LatticeNode, pos: { x: number, y: number, z: number } }> = ({ node, pos }) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.style.setProperty('--node-transform', `translate3d(${pos.x}px, ${pos.y}px, ${pos.z}px)`);
+    }
+  }, [pos]);
+
+  return (
+    <div
+      ref={ref}
+      className="lattice-node absolute transform-gpu flex items-center justify-center group"
+    >
+      <div className="w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.8)] group-hover:scale-150 transition-transform"></div>
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 text-[8px] text-emerald-200 opacity-0 group-hover:opacity-100 whitespace-nowrap bg-black/80 px-1 rounded pointer-events-none">
+        {node.label}
+      </div>
+    </div>
+  );
+};

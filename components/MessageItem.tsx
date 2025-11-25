@@ -15,6 +15,14 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
   const isConsensus = message.role === AIRole.CONSENSUS;
   const isNeuro = message.role === AIRole.NEURO;
   const [isCopied, setIsCopied] = React.useState(false);
+  const bubbleRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (bubbleRef.current && message.metrics?.confidence) {
+        const color = isNeuro ? '16, 185, 129' : isReflex ? '6, 182, 212' : isMemory ? '217, 70, 239' : '255, 255, 255';
+        bubbleRef.current.style.setProperty('--dynamic-border-color', `rgba(${color}, ${message.metrics.confidence / 100})`);
+    }
+  }, [message.metrics?.confidence, isNeuro, isReflex, isMemory]);
 
   const handleCopy = async () => {
     if (message.text) {
@@ -150,7 +158,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
           </div>
 
           {/* Message Bubble */}
-          <div className={`
+          <div 
+            ref={bubbleRef}
+            className={`
             p-3 md:p-4 rounded-xl text-sm shadow-md backdrop-blur-sm border w-full
             ${isUser ? 'bg-slate-800/80 text-slate-100 border-slate-700 rounded-tr-none' : ''}
             ${isReflex ? 'bg-cyan-950/20 text-cyan-50 border-cyan-500/20 rounded-tl-none' : ''}
@@ -158,10 +168,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
             ${isNeuro ? 'bg-emerald-950/20 text-emerald-50 border-emerald-500/20 rounded-tl-none' : ''}
             ${isConsensus ? 'bg-amber-950/20 text-amber-50 border-amber-500/20 rounded-tl-none' : ''}
             message-bubble group relative
-          `}
-          style={{
-             '--dynamic-border-color': message.metrics?.confidence ? `rgba(${isNeuro ? '16, 185, 129' : isReflex ? '6, 182, 212' : isMemory ? '217, 70, 239' : '255, 255, 255'}, ${message.metrics.confidence / 100})` : undefined,
-          } as React.CSSProperties}>
+          `}>
             {/* Copy Button */}
             <button 
               onClick={handleCopy}

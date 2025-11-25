@@ -146,11 +146,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGlitch }) => {
                            <div className="absolute bottom-3 right-4 opacity-20 pointer-events-none">
                                 <div className="flex gap-0.5 items-end h-6">
                                     {[...Array(20)].map((_, i) => (
-                                        <div 
-                                            key={i} 
-                                            className="w-0.5 bg-white barcode-line" 
-                                            style={{ '--bar-height': `${Math.random() * 100}%` } as React.CSSProperties}
-                                        ></div>
+                                        <BarcodeLine key={i} />
                                     ))}
                                 </div>
                            </div>
@@ -323,6 +319,7 @@ const SocialButton = ({ icon, label, hoverClass, onClick }: { icon: React.ReactN
 const SystemBootLoader = () => {
     const [step, setStep] = useState(0);
     const steps = ["ALLOCATING_MEMORY", "VERIFYING_HASH", "ESTABLISHING_UPLINK"];
+    const progressRef = React.useRef<HTMLDivElement>(null);
     
     useEffect(() => {
         const interval = setInterval(() => {
@@ -330,6 +327,12 @@ const SystemBootLoader = () => {
         }, 800);
         return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+        if (progressRef.current) {
+            progressRef.current.style.setProperty('--progress-width', `${(step + 1) * 33}%`);
+        }
+    }, [step]);
 
     return (
         <div className="space-y-2 animate-in fade-in slide-in-from-bottom-2">
@@ -339,13 +342,25 @@ const SystemBootLoader = () => {
             </div>
             <div className="h-1 bg-slate-800 w-full overflow-hidden rounded-full">
                 <div 
+                    ref={progressRef}
                     className="h-full bg-gradient-to-r from-fuchsia-600 to-cyan-400 animate-[shimmer_1.5s_infinite] boot-progress-bar" 
-                    style={{ '--progress-width': `${(step + 1) * 33}%` } as React.CSSProperties}
                 ></div>
             </div>
         </div>
     );
 }
+
+const BarcodeLine = () => {
+    const ref = React.useRef<HTMLDivElement>(null);
+    
+    useEffect(() => {
+        if (ref.current) {
+            ref.current.style.setProperty('--bar-height', `${Math.random() * 100}%`);
+        }
+    }, []);
+
+    return <div ref={ref} className="w-0.5 bg-white barcode-line"></div>;
+};
 
 const BracketInput = ({ label, value, onChange, type = "text", placeholder, icon }: any) => {
     const [focused, setFocused] = useState(false);
