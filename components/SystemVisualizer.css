@@ -1,0 +1,17 @@
+.reflex-bar {
+  width: var(--reflex-width, 0%);
+}
+
+.memory-bar {
+  width: var(--memory-width, 0%);
+}
+
+.conf-bar {
+  width: var(--conf-width, 0%);
+}
+
+.topology-node {
+  height: var(--node-height, 0%);
+  animation-duration: var(--anim-duration, 1.5s);
+  animation-delay: var(--anim-delay, 0s);
+}

@@ -2,6 +2,7 @@ import React from 'react';
 import { Message, AIRole } from '../types';
 import { User, Zap, BrainCircuit, Clock, CheckCircle2, Globe, ExternalLink, ShieldAlert, ImageIcon, FileText, Network } from 'lucide-react';
 import TTSPlayer from './TTSPlayer';
+import './MessageItem.css';
 
 interface MessageItemProps {
   message: Message;
@@ -131,10 +132,11 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
             ${isMemory ? 'bg-fuchsia-950/20 text-fuchsia-50 border-fuchsia-500/20 rounded-tl-none' : ''}
             ${isNeuro ? 'bg-emerald-950/20 text-emerald-50 border-emerald-500/20 rounded-tl-none' : ''}
             ${isConsensus ? 'bg-amber-950/20 text-amber-50 border-amber-500/20 rounded-tl-none' : ''}
+            message-bubble
           `}
           style={{
-             borderColor: message.metrics?.confidence ? `rgba(${isNeuro ? '16, 185, 129' : isReflex ? '6, 182, 212' : isMemory ? '217, 70, 239' : '255, 255, 255'}, ${message.metrics.confidence / 100})` : undefined
-          }}>
+             '--dynamic-border-color': message.metrics?.confidence ? `rgba(${isNeuro ? '16, 185, 129' : isReflex ? '6, 182, 212' : isMemory ? '217, 70, 239' : '255, 255, 255'}, ${message.metrics.confidence / 100})` : undefined,
+          } as React.CSSProperties}>
             {/* Attachment Display */}
             {message.attachment && (
               <div className="mb-3 rounded-lg overflow-hidden border border-slate-700/50 bg-black/30 relative group">

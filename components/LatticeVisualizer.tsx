@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { LatticeNode, LatticeEdge } from '../cores/neuro-symbolic/types';
+import './LatticeVisualizer.css';
 
 interface LatticeVisualizerProps {
   nodes: LatticeNode[];
@@ -61,8 +62,7 @@ const LatticeVisualizer: React.FC<LatticeVisualizerProps> = ({ nodes, edges, isA
       
       <div 
         ref={rotatorRef}
-        className="w-full h-full preserve-3d absolute top-0 left-0 flex items-center justify-center transition-transform duration-100 ease-linear"
-        style={{ transform: 'translateZ(-100px) rotateX(0deg) rotateY(0deg)' }}
+        className="lattice-rotator w-full h-full preserve-3d absolute top-0 left-0 flex items-center justify-center transition-transform duration-100 ease-linear"
       >
         {/* Render Edges */}
         {edges.map((edge, i) => {
@@ -84,16 +84,14 @@ const LatticeVisualizer: React.FC<LatticeVisualizerProps> = ({ nodes, edges, isA
 
           // Rotation (Simplified - accurate 3D line rotation in CSS is complex, using opacity to simulate depth)
           return (
-             <div 
+                
+            <div
                 key={`edge-${i}`}
-                className="absolute bg-emerald-500/30 h-[1px] transform-gpu"
+                className="lattice-edge absolute bg-emerald-500/30 h-[1px] transform-gpu w-[var(--edge-width)]"
                 style={{
-                    width: `${length}px`,
-                    left: '50%',
-                    top: '50%',
-                    transform: `translate3d(${mx}px, ${my}px, ${mz}px) rotateY(${Math.atan2(dz, dx)}rad) rotateZ(${Math.atan2(dy, dx)}rad) translate(-50%, -50%)`,
-                    opacity: 0.4
-                }}
+                    '--edge-width': `${length}px`,
+                    '--edge-transform': `translate3d(${mx}px, ${my}px, ${mz}px) rotateY(${Math.atan2(dz, dx)}rad) rotateZ(${Math.atan2(dy, dx)}rad) translate(-50%, -50%)`,
+                } as React.CSSProperties}
              />
           );
         })}
@@ -105,12 +103,10 @@ const LatticeVisualizer: React.FC<LatticeVisualizerProps> = ({ nodes, edges, isA
           return (
             <div
               key={node.id}
-              className="absolute transform-gpu flex items-center justify-center group"
+              className="lattice-node absolute transform-gpu flex items-center justify-center group"
               style={{
-                transform: `translate3d(${pos.x}px, ${pos.y}px, ${pos.z}px)`,
-                left: '50%',
-                top: '50%'
-              }}
+                '--node-transform': `translate3d(${pos.x}px, ${pos.y}px, ${pos.z}px)`,
+              } as React.CSSProperties}
             >
               <div className="w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.8)] group-hover:scale-150 transition-transform"></div>
               <div className="absolute top-3 left-1/2 -translate-x-1/2 text-[8px] text-emerald-200 opacity-0 group-hover:opacity-100 whitespace-nowrap bg-black/80 px-1 rounded pointer-events-none">

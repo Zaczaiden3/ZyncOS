@@ -1,0 +1,3 @@
+.message-bubble {
+  border-color: var(--dynamic-border-color, transparent);
+}

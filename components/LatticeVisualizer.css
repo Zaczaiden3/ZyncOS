@@ -1,0 +1,16 @@
+.lattice-rotator {
+  transform: translateZ(-100px) rotateX(0deg) rotateY(0deg);
+}
+
+.lattice-edge {
+  left: 50%;
+  top: 50%;
+  opacity: 0.4;
+  transform: var(--edge-transform);
+}
+
+.lattice-node {
+  left: 50%;
+  top: 50%;
+  transform: var(--node-transform);
+}
