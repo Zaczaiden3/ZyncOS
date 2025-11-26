@@ -451,12 +451,14 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
   );
 };
 
-export default React.memo(SystemVisualizer);
+export default SystemVisualizer;
 
 const ReflexBar = ({ widthPercentage }: { widthPercentage: number }) => {
     const ref = React.useRef<HTMLDivElement>(null);
     useEffect(() => {
-        if (ref.current) ref.current.style.setProperty('--reflex-width', `${widthPercentage}%`);
+        // Ensure at least 2% width if there is any activity, so it's visible
+        const effectiveWidth = widthPercentage > 0 ? Math.max(2, widthPercentage) : 0;
+        if (ref.current) ref.current.style.setProperty('--reflex-width', `${effectiveWidth}%`);
     }, [widthPercentage]);
     return <div ref={ref} className="reflex-bar bg-gradient-to-r from-cyan-600 to-cyan-400 h-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(6,182,212,0.5)]"></div>;
 };
@@ -464,7 +466,9 @@ const ReflexBar = ({ widthPercentage }: { widthPercentage: number }) => {
 const MemoryBar = ({ widthPercentage }: { widthPercentage: number }) => {
     const ref = React.useRef<HTMLDivElement>(null);
     useEffect(() => {
-        if (ref.current) ref.current.style.setProperty('--memory-width', `${widthPercentage}%`);
+        // Ensure at least 2% width if there is any activity
+        const effectiveWidth = widthPercentage > 0 ? Math.max(2, widthPercentage) : 0;
+        if (ref.current) ref.current.style.setProperty('--memory-width', `${effectiveWidth}%`);
     }, [widthPercentage]);
     return <div ref={ref} className="memory-bar bg-gradient-to-r from-fuchsia-600 to-fuchsia-400 h-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(232,121,249,0.5)]"></div>;
 };

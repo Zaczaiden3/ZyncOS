@@ -23,7 +23,7 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({ text, role }) => {
   const isMemory = role === AIRole.MEMORY;
   const isReflex = role === AIRole.REFLEX;
 
-  // Visualizer Loop
+  // Visualizer Loop (Waveform Style)
   const drawVisualizer = () => {
     if (!canvasRef.current || !analyzerRef.current) return;
     
@@ -35,25 +35,36 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({ text, role }) => {
     const dataArray = new Uint8Array(bufferLength);
     
     const render = () => {
-        analyzerRef.current!.getByteFrequencyData(dataArray);
+        if (!analyzerRef.current) return;
+        
+        analyzerRef.current.getByteTimeDomainData(dataArray);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        const barWidth = (canvas.width / bufferLength) * 2.5;
-        let barHeight;
+        ctx.lineWidth = 2;
+        const r = isMemory ? 232 : 6;   // Fuchsia vs Cyan
+        const g = isMemory ? 121 : 182;
+        const b = isMemory ? 249 : 212;
+        ctx.strokeStyle = `rgb(${r},${g},${b})`;
+        ctx.beginPath();
+
+        const sliceWidth = canvas.width * 1.0 / bufferLength;
         let x = 0;
 
         for (let i = 0; i < bufferLength; i++) {
-            barHeight = dataArray[i] / 2; // Scale down
-            
-            const r = isMemory ? 217 : 6;   // Fuchsia vs Cyan
-            const g = isMemory ? 70 : 182;
-            const b = isMemory ? 239 : 212;
+            const v = dataArray[i] / 128.0;
+            const y = v * canvas.height / 2;
 
-            ctx.fillStyle = `rgb(${r},${g},${b})`;
-            ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
 
-            x += barWidth + 1;
+            x += sliceWidth;
         }
+
+        ctx.lineTo(canvas.width, canvas.height / 2);
+        ctx.stroke();
 
         if (status === 'PLAYING') {
             animationFrameRef.current = requestAnimationFrame(render);
@@ -73,7 +84,7 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({ text, role }) => {
         
         // 1. Initialize Audio Context
         if (!audioContextRef.current) {
-            const AudioContext = window.AudioContext || window.webkitSpeechRecognition;
+            const AudioContext = window.AudioContext || (window as any).webkitSpeechRecognition;
             audioContextRef.current = new AudioContext({ sampleRate: 24000 });
         }
         const ctx = audioContextRef.current;
@@ -81,7 +92,7 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({ text, role }) => {
 
         // 2. Text Analysis & Synthesis
         setStatus('ANALYZING_TEXT');
-        await new Promise(r => setTimeout(r, 300)); // Visual delay for "Processing" feel
+        // Removed artificial delay for speed
         setStatus('SYNTHESIZING');
         
         const base64Audio = await generateSpeech(text, role);
@@ -101,7 +112,7 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({ text, role }) => {
         
         // Connect Analyzer for visualization
         const analyzer = ctx.createAnalyser();
-        analyzer.fftSize = 64;
+        analyzer.fftSize = 2048; // Larger FFT size for better waveform resolution
         source.connect(analyzer);
         analyzer.connect(ctx.destination);
         
@@ -119,8 +130,15 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({ text, role }) => {
         };
 
     } catch (err: any) {
-        console.error(err);
-        setError("TTS_FAIL");
+        console.error("TTS Error:", err);
+        let errorMessage = "TTS_FAIL";
+        if (err.message) {
+            if (err.message.includes("404")) errorMessage = "MODEL_NOT_FOUND";
+            else if (err.message.includes("400")) errorMessage = "BAD_REQUEST";
+            else if (err.message.includes("quota")) errorMessage = "QUOTA_EXCEEDED";
+            else errorMessage = err.message.slice(0, 20) + "...";
+        }
+        setError(errorMessage);
         setStatus('IDLE');
     }
   };

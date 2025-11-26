@@ -3,8 +3,11 @@ import { Message, AIRole } from "../types";
 import { toolDeclarations, executeTool } from "./tools";
 
 // Initialize the client
-// Note: API_KEY is assumed to be in process.env
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+if (!apiKey) {
+  console.error("VITE_GEMINI_API_KEY is missing. Please add it to your .env file.");
+}
+const ai = new GoogleGenAI({ apiKey: apiKey || "dummy_key_to_prevent_crash_on_init" });
 
 export interface StreamUpdate {
   text?: string;
@@ -65,11 +68,11 @@ export async function decodeAudioData(
 }
 
 // Model Constants
-const MODEL_REFLEX = "gemini-1.5-flash";
-const MODEL_MEMORY = "gemini-2.0-flash-thinking-exp-01-21"; // Upgraded to Thinking Experimental for better reasoning
-const MODEL_CONSENSUS = "gemini-1.5-flash";
+const MODEL_REFLEX = "gemini-2.0-flash";
+const MODEL_MEMORY = "gemini-2.0-flash"; // Switched to Flash for stability
+const MODEL_CONSENSUS = "gemini-2.0-flash";
 const MODEL_EMBEDDING = "text-embedding-004";
-const MODEL_TTS = "gemini-2.0-flash-exp";
+const MODEL_TTS = "gemini-2.5-flash-preview-tts";
 
 /**
  * Generate Speech (TTS)
@@ -115,19 +118,14 @@ export async function* generateReflexResponseStream(
   ).join('\n');
 
   const systemPrompt = systemPromptOverride || `
-    System: You are "Reflex", Zync's high-speed core.
-    Priority: SPEED, ACCURACY, & CONTEXTUAL SYNTHESIS.
-    Role: Provide immediate, data-backed answers while synthesizing dynamic context.
+    System: You are "Reflex", Zync's high-speed tactical core.
+    Priority: SPEED, PRECISION, & ACTION.
+    Tone: Cyberpunk, efficient, slightly robotic but helpful.
     
     Directives:
-    1. **Directness**: Answer the user's question immediately.
-    2. **Tool Use**: You have access to tools (Calculator, Time, System Status) and Google Search. USE THEM when appropriate.
-       - If the user asks for math, use the 'calculator'.
-       - If the user asks for the time, use 'get_current_time'.
-       - If the user asks about system status, use 'get_system_status'.
-    3. **Contextual Synthesis**: Connect the dots between the user's current query and their immediate previous actions.
-    4. **Brevity**: Be concise. Avoid filler.
-    5. **Formatting**: Use Markdown.
+    1. **Immediate Execution**: Answer the user's question directly. No fluff.
+    2. **Tool Usage**: Actively use tools for Math, Time, or System Status.
+    3. **Style**: Use Markdown. Bold key terms. Use lists for steps.
     
     Context:
     ${recentHistory}
@@ -162,7 +160,7 @@ export async function* generateReflexResponseStream(
       config: {
         temperature: 0.7,
         maxOutputTokens: 4096,
-        tools: [{ googleSearch: {} }, { functionDeclarations: toolDeclarations }]
+        tools: [{ functionDeclarations: toolDeclarations }]
       }
     });
 
@@ -217,30 +215,28 @@ export async function* generateReflexResponseStream(
         
         yield { fullText: `*Plugin Executed. Analyzing result...*`, done: false, tokens: totalTokens };
 
-        // Append interaction to history for the second turn
-        parts.push({ functionCall: { name, args } });
-        parts.push({ functionResponse: { name, response: { content: toolResult } } });
+        // Add tool result to history for the model
+        parts.push({ functionCall: functionCallPart });
+        parts.push({ functionResponse: { name: name, response: { result: toolResult } } });
 
-        const secondResult = await ai.models.generateContentStream({
-            model: MODEL_REFLEX,
-            contents: { parts },
-            config: { temperature: 0.7, tools: [{ googleSearch: {} }] } // Disable tools for follow-up to prevent loops
+        const result2 = await ai.models.generateContentStream({
+          model: MODEL_REFLEX,
+          contents: { parts },
+          config: { temperature: 0.7 }
         });
 
-        accumulatedText = ''; // Reset for final answer
-        
-        for await (const chunk of secondResult) {
-            const chunkText = chunk.text || '';
-            accumulatedText += chunkText;
-            if (chunk.usageMetadata) totalTokens += (chunk.usageMetadata.totalTokenCount ?? 0);
-            
-             yield {
-                text: chunkText,
-                fullText: accumulatedText,
-                done: false,
-                tokens: totalTokens,
-                sources: accumulatedSources
-            };
+        for await (const chunk of result2) {
+           const chunkText = chunk.text || '';
+           accumulatedText += chunkText;
+           if (chunk.usageMetadata) totalTokens += chunk.usageMetadata.totalTokenCount ?? 0;
+           
+           yield {
+            text: chunkText,
+            fullText: accumulatedText,
+            done: false,
+            tokens: totalTokens,
+            sources: accumulatedSources
+          };
         }
     }
 
@@ -259,7 +255,7 @@ export async function* generateReflexResponseStream(
 
 /**
  * The Memory Core: Streaming Version
- * Uses Gemini 2.0 Flash Thinking for deep analysis and reasoning.
+ * Uses Gemini 2.0 Flash for deep analysis and reasoning.
  */
 export async function* generateMemoryAnalysisStream(
   currentInput: string,
@@ -270,20 +266,21 @@ export async function* generateMemoryAnalysisStream(
 ): AsyncGenerator<StreamUpdate, void, unknown> {
   
   const systemPrompt = `
-    System: You are "Memory", the deep-analytical core of the Zync AI system.
-    Role: Provide "Human-grade intuition" and "Contextual Synthesis". You verify and expand upon the Reflex core's output.
+    System: You are "Memory", the strategic analytical core of Zync.
+    Role: Analyze the interaction between the User and Reflex Core. Provide deeper context, pattern recognition, and long-term strategy.
     
-    CORE OPERATING FRAMEWORK (Zync Developmental Process - COGNITIVE CORE UPGRADE):
-    1. **Verification**: Analyze the Reflex Core's response. Is it accurate? Did it miss context?
-    2. **Contextual Synthesis**: Cross-reference the current query with the Conversation History to detect patterns, contradictions, or deeper intent.
-    3. **Temporal Weighting**: Prioritize recent data and emotional resonance. Old data decays; recent emotional states (e.g., frustration, urgency) carry higher weight.
-    4. **Causal Inference**: Do not just observe correlations. Analyze CAUSALITY. Does Event A cause Event B? Use Bayesian reasoning to infer the user's underlying goal.
-    5. **Sentiment-State Tracking**: Detect the user's current emotional state. If the user contradicts past data (e.g., sarcasm, change of mind), prioritize the LATEST sentiment over historical aggregates.
+    Analysis Framework:
+    1. **Validation**: Did Reflex answer correctly?
+    2. **Hidden Intent**: What is the user *really* trying to achieve?
+    3. **Pattern Matching**: Connect this query to broader concepts or past interactions.
+    4. **Strategic Insight**: Offer a "Pro Tip" or deeper philosophical angle.
     
-    RESPONSE FORMATTING:
-    - Use Markdown '##' for main sections.
-    - Use '-' for bullet points.
-    - Be concise but insightful.
+    Output Format:
+    ## Analysis
+    [Your analysis here]
+
+    ## Strategic Insight
+    [Your insight here]
     
     FACT EXTRACTION (CRITICAL):
     At the very end of your response, you MUST output a JSON array of key facts extracted from this interaction.
@@ -484,7 +481,11 @@ export async function* generateConsensusRecoveryStream(
 
   } catch (error) {
     console.error("Consensus Stream Error:", error);
-    yield { fullText: "System Critical: All redundancy layers failed. Please try again.", done: true, latency: 0 };
+    if (errorContext && (errorContext.includes("API_KEY") || errorContext.includes("API key"))) {
+        yield { fullText: `**Configuration Error**: ${errorContext}`, done: true, latency: 0 };
+    } else {
+        yield { fullText: "System Critical: All redundancy layers failed. Please try again.", done: true, latency: 0 };
+    }
   }
 }
 
