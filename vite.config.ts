@@ -41,6 +41,9 @@ export default defineConfig(({ mode }) => {
                 if (id.includes('@google/genai')) {
                   return 'genai';
                 }
+                if (id.includes('@mlc-ai/web-llm')) {
+                  return 'web-llm';
+                }
                 return 'vendor';
               }
             }

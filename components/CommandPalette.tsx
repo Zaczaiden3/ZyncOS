@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, CornerDownLeft } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Search, CornerDownLeft, Lock } from 'lucide-react';
 
 export interface CommandOption {
   id: string;
@@ -8,6 +8,8 @@ export interface CommandOption {
   icon: React.ReactNode;
   shortcut?: string;
   action: () => void;
+  disabled?: boolean;
+  category?: string;
 }
 
 interface CommandPaletteProps {
@@ -22,11 +24,13 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, comman
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Filter commands
-  const filteredCommands = commands.filter(cmd =>
-    cmd.label.toLowerCase().includes(query.toLowerCase()) ||
-    cmd.description.toLowerCase().includes(query.toLowerCase())
-  );
+  // Filter and flatten commands
+  const filteredCommands = useMemo(() => {
+    return commands.filter(cmd =>
+      (cmd.label.toLowerCase().includes(query.toLowerCase()) ||
+      cmd.description.toLowerCase().includes(query.toLowerCase()))
+    );
+  }, [commands, query]);
 
   useEffect(() => {
     if (isOpen) {
@@ -51,8 +55,9 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, comman
         setSelectedIndex(prev => (prev - 1 + filteredCommands.length) % filteredCommands.length);
       } else if (e.key === 'Enter') {
         e.preventDefault();
-        if (filteredCommands[selectedIndex]) {
-          filteredCommands[selectedIndex].action();
+        const selected = filteredCommands[selectedIndex];
+        if (selected && !selected.disabled) {
+          selected.action();
           onClose();
         }
       } else if (e.key === 'Escape') {
@@ -114,11 +119,14 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, comman
               <div
                 key={cmd.id}
                 onClick={() => {
-                  cmd.action();
-                  onClose();
+                  if (!cmd.disabled) {
+                    cmd.action();
+                    onClose();
+                  }
                 }}
                 className={`
-                  px-4 py-3 flex items-center justify-between cursor-pointer transition-all duration-150
+                  px-4 py-3 flex items-center justify-between transition-all duration-150
+                  ${cmd.disabled ? 'opacity-50 cursor-not-allowed grayscale' : 'cursor-pointer'}
                   ${index === selectedIndex ? 'bg-cyan-950/30 border-l-2 border-cyan-400 pl-[14px]' : 'border-l-2 border-transparent hover:bg-slate-800/50'}
                 `}
               >
@@ -137,13 +145,14 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, comman
                 </div>
 
                 <div className="flex items-center gap-3 shrink-0">
+                    {cmd.disabled && <Lock size={12} className="text-slate-600" />}
                     {cmd.shortcut && (
                     <div className="text-[10px] font-mono text-slate-500 bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-700/50 hidden sm:block">
                         {cmd.shortcut}
                     </div>
                     )}
                     
-                    {index === selectedIndex && !cmd.shortcut && (
+                    {index === selectedIndex && !cmd.shortcut && !cmd.disabled && (
                         <CornerDownLeft size={14} className="text-cyan-500/50" />
                     )}
                 </div>

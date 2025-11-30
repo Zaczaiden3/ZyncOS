@@ -1,10 +1,11 @@
 export interface LatticeNode {
   id: string;
   label: string;
-  vector: number[]; // Placeholder for embedding vector
-  symbolicTags: Record<string, string | number | boolean>;
+  vector?: number[]; // Placeholder for embedding vector
+  symbolicTags?: Record<string, string | number | boolean>;
   confidence: number;
   type: 'concept' | 'entity' | 'rule' | 'constraint';
+  activationLevel?: number;
 }
 
 export interface LatticeEdge {

@@ -82,4 +82,56 @@ export class Lattice {
 
     return { nodes: activatedNodes, edges: activatedEdges };
   }
+
+  /**
+   * Ingest Semantic Tags from AI Cores
+   * Dynamically updates the graph with new concepts found during analysis.
+   */
+  ingestSemanticTags(tags: string[], sourceId?: string): void {
+    const newNodes: LatticeNode[] = [];
+
+    tags.forEach(tag => {
+      // Normalize tag
+      const label = tag.trim();
+      const id = label.toLowerCase().replace(/\s+/g, '-');
+
+      if (!this.nodes.has(id)) {
+        const node: LatticeNode = {
+          id,
+          label,
+          type: 'concept', // Default type for auto-ingested tags
+          confidence: 0.8, // Initial confidence for AI-generated tags
+          activationLevel: 0
+        };
+        this.addNode(node);
+        newNodes.push(node);
+      } else {
+        // Reinforce existing node
+        const node = this.nodes.get(id)!;
+        node.confidence = Math.min(1.0, node.confidence + 0.05);
+      }
+
+      // Link to source if provided (e.g., the specific task or file concept)
+      if (sourceId && this.nodes.has(sourceId)) {
+        this.addEdge({
+          sourceId,
+          targetId: id,
+          weight: 0.5,
+          relationType: 'related_to'
+        });
+      }
+    });
+
+    // Create weak associations between all new tags in this batch (co-occurrence)
+    for (let i = 0; i < newNodes.length; i++) {
+      for (let j = i + 1; j < newNodes.length; j++) {
+        this.addEdge({
+          sourceId: newNodes[i].id,
+          targetId: newNodes[j].id,
+          weight: 0.3,
+          relationType: 'co_occurring'
+        });
+      }
+    }
+  }
 }

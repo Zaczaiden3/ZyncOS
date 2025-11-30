@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense, useMemo } from 'react';
 import { AIRole, Message, SystemStats } from './types';
 import { generateReflexResponseStream, generateMemoryAnalysisStream, generateConsensusRecoveryStream, generateConsensusDebateStream } from './services/gemini';
 import MessageItem from './components/MessageItem';
@@ -828,34 +828,40 @@ export default function App() {
     }
   };
 
-  const commands: CommandOption[] = [
+  const commands: CommandOption[] = useMemo(() => [
     {
       id: 'new-session',
       label: 'New Session',
       description: 'Create a fresh chat session',
       icon: <Plus size={18} />,
-      action: handleNewSession
+      action: handleNewSession,
+      category: 'Session'
     },
     ...sessions.filter(s => s.id !== currentSession.id).map(s => ({
         id: `switch-${s.id}`,
         label: `Switch to: ${s.name}`,
         description: `Last active: ${new Date(s.lastModified).toLocaleTimeString()}`,
         icon: <Layers size={18} />,
-        action: () => handleSwitchSession(s.id)
+        action: () => handleSwitchSession(s.id),
+        category: 'Session'
     })),
     {
       id: 'upload-image',
       label: 'Upload Image',
       description: 'Attach an image file to the chat context',
       icon: <ImageIcon size={18} />,
-      action: () => fileInputRef.current?.click()
+      action: () => fileInputRef.current?.click(),
+      disabled: isReflexActive || isMemoryActive,
+      category: 'Input'
     },
     {
       id: 'clear-chat',
       label: 'Clear Current Session',
       description: 'Reset the conversation history',
       icon: <Trash2 size={18} />,
-      action: handleClearChat
+      action: handleClearChat,
+      disabled: isReflexActive || isMemoryActive,
+      category: 'Session'
     },
     {
       id: 'delete-session',
@@ -868,35 +874,42 @@ export default function App() {
           setCurrentSession(newSession);
           setMessages(newSession.messages);
           setSessions(sessionManager.getSessions());
-      }
+      },
+      category: 'Session'
     },
     {
       id: 'system-reset',
       label: 'Reboot Core System',
       description: 'Fully re-initialize system stats and chat',
       icon: <RefreshCw size={18} />,
-      action: handleResetSystem
+      action: handleResetSystem,
+      category: 'System'
     },
     {
       id: 'export-logs',
       label: 'Export Session (JSON)',
       description: 'Download current session data',
       icon: <FileJson size={18} />,
-      action: handleExportLogs
+      action: handleExportLogs,
+      category: 'System'
     },
     {
       id: 'simulate-personas',
       label: 'Simulate Personas',
       description: 'Run counterfactual analysis on last query',
       icon: <Users size={18} />,
-      action: handleSimulatePersonas
+      action: handleSimulatePersonas,
+      disabled: isReflexActive || isMemoryActive || messages.length === 0,
+      category: 'AI Tools'
     },
     {
       id: 'consensus-debate',
       label: 'Start Consensus Debate',
       description: 'Trigger multi-model debate on topic',
       icon: <Network size={18} />,
-      action: handleConsensusDebate
+      action: handleConsensusDebate,
+      disabled: isReflexActive || isMemoryActive,
+      category: 'AI Tools'
     },
     {
       id: 'toggle-offline',
@@ -913,30 +926,35 @@ export default function App() {
             timestamp: Date.now(),
             metrics: { latency: 0, tokens: 0, confidence: 100 }
         }]);
-      }
+      },
+      category: 'System'
     },
     {
       id: 'status-report',
       label: 'System Status',
       description: 'View current operational status',
       icon: <Activity size={18} />,
-      action: () => setMobileMenuOpen(true) 
+      action: () => setMobileMenuOpen(true),
+      category: 'System'
     },
     {
       id: 'logout',
       label: 'Terminate Session',
       description: 'Logout and return to secure gateway',
       icon: <Lock size={18} />,
-      action: handleLogout
+      action: handleLogout,
+      category: 'System'
     },
     {
       id: 'test-memory-puzzle',
       label: 'Test Memory: Logic Puzzle',
       description: 'Run a complex logic puzzle to test Ghost Branching',
       icon: <Activity size={18} />,
-      action: handleTestMemoryPuzzle
+      action: handleTestMemoryPuzzle,
+      disabled: isReflexActive || isMemoryActive,
+      category: 'AI Tools'
     }
-  ];
+  ], [sessions, currentSession, isOfflineMode, isReflexActive, isMemoryActive, messages.length]);
 
   if (!isAuthenticated) {
     return (
@@ -1135,8 +1153,18 @@ export default function App() {
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isReflexActive || isMemoryActive}
+                      className={`p-1.5 rounded-md transition-colors hover:bg-slate-800 text-slate-500 hover:text-cyan-400`}
+                      title="Visual Input (Reflex Core)"
+                    >
+                       <ImageIcon size={18} />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isReflexActive || isMemoryActive}
                       className={`p-1.5 rounded-md transition-colors ${selectedImage ? 'bg-cyan-500/20 text-cyan-400' : 'hover:bg-slate-800 text-slate-500 hover:text-slate-300'}`}
-                      title="Attach Image"
+                      title="Attach File"
                     >
                        <Paperclip size={18} />
                     </button>

@@ -35,6 +35,19 @@ function parseBase64(base64Data: string) {
 }
 
 /**
+ * Generate Project Context
+ * Bundles multiple files into a single context string for the LLM.
+ * Optimized for Kat Coder's 256k context window.
+ */
+export function generateProjectContext(files: { path: string; content: string }[]): string {
+  return files.map(file => `
+=== FILE START: ${file.path} ===
+${file.content}
+=== FILE END: ${file.path} ===
+`).join('\n');
+}
+
+/**
  * Audio Decoding Helper (Raw PCM to AudioBuffer)
  * Gemini TTS returns raw PCM data (24kHz), which requires manual decoding.
  */
