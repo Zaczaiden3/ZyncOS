@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { SystemStats } from '../types';
-import { Activity, Database, Zap, List, BarChart3, Brain, Network, ChevronRight, X, Cpu, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Activity, Database, Zap, List, BarChart3, Brain, Network, ChevronRight, X, Cpu, AlertTriangle, RefreshCw, Shield, AlertCircle, Info } from 'lucide-react';
 import LatticeVisualizer from './LatticeVisualizer';
 import { LatticeNode, LatticeEdge } from '../cores/neuro-symbolic/types';
+import { autonomicSystem, OperationalEvent } from '../services/autonomicSystem';
 import './SystemVisualizer.css';
 
 // --- Self-Healing: Error Boundary for Component Resilience ---
@@ -439,6 +440,14 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
             </div>
           )}
           
+          {/* Autonomic Ops Timeline */}
+          <div className="mt-4">
+              <h3 className="text-[10px] font-mono text-slate-500 mb-3 flex items-center gap-2 uppercase tracking-wider">
+                  <Shield size={12} /> Autonomic Ops
+              </h3>
+              <OpsTimeline />
+          </div>
+
           {/* Footer */}
           <div className="flex justify-center pt-4 border-t border-slate-800/30 shrink-0">
               <div className="text-[10px] text-slate-600 font-mono flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity">
@@ -454,6 +463,48 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
 };
 
 export default SystemVisualizer;
+
+// --- Subcomponents ---
+
+const OpsTimeline = () => {
+    const [events, setEvents] = useState<OperationalEvent[]>([]);
+
+    useEffect(() => {
+        const unsubscribe = autonomicSystem.subscribe((updatedEvents) => {
+            setEvents(updatedEvents);
+        });
+        return unsubscribe;
+    }, []);
+
+    return (
+        <div className="bg-slate-900/30 rounded-lg border border-slate-800 p-2 h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent font-mono text-[9px]">
+            {events.length === 0 ? (
+                <div className="text-slate-600 italic text-center mt-4">No operational events recorded.</div>
+            ) : (
+                <div className="space-y-1.5">
+                    {events.map(event => (
+                        <div key={event.id} className="flex gap-2 items-start opacity-80 hover:opacity-100 transition-opacity">
+                            <span className="text-slate-500 shrink-0">{new Date(event.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' })}</span>
+                            <div className="shrink-0 mt-0.5">
+                                {event.type === 'ERROR' && <AlertCircle size={10} className="text-red-400" />}
+                                {event.type === 'WARNING' && <AlertTriangle size={10} className="text-amber-400" />}
+                                {event.type === 'REMEDIATION' && <Shield size={10} className="text-emerald-400" />}
+                                {event.type === 'INFO' && <Info size={10} className="text-blue-400" />}
+                            </div>
+                            <span className={`break-words ${
+                                event.type === 'ERROR' ? 'text-red-300' : 
+                                event.type === 'WARNING' ? 'text-amber-300' : 
+                                event.type === 'REMEDIATION' ? 'text-emerald-300' : 'text-slate-300'
+                            }`}>
+                                {event.message}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
 
 const ReflexBar = ({ widthPercentage }: { widthPercentage: number }) => {
     const ref = React.useRef<HTMLDivElement>(null);

@@ -182,14 +182,24 @@ export const availableTools: ToolDefinition[] = [
 
 export const toolDeclarations = availableTools.map(t => t.declaration);
 
+import { autonomicSystem } from "./autonomicSystem";
+
 export const executeTool = async (name: string, args: any) => {
+  // Self-Protection: Check Policy
+  if (!autonomicSystem.checkPolicy(name, 'execute', args)) {
+    return JSON.stringify({ error: `Policy Violation: Execution of tool '${name}' is blocked by the Autonomic Nervous System.` });
+  }
+
   const tool = availableTools.find(t => t.name === name);
   if (!tool) {
     return JSON.stringify({ error: `Tool ${name} not found.` });
   }
   try {
-    return await tool.execute(args);
+    const result = await tool.execute(args);
+    return result;
   } catch (e) {
+    // Self-Healing: Report Error
+    autonomicSystem.reportError(`Tool:${name}`, e);
     return JSON.stringify({ error: `Tool execution failed: ${e}` });
   }
 };
