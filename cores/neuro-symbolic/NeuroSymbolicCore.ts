@@ -164,8 +164,13 @@ export class NeuroSymbolicCore {
             )) continue;
 
             // Check for shared symbolic tags (Heuristic Match)
-            const sharedTags = Object.keys(nodeA.symbolicTags).filter(tag => 
-                nodeB.symbolicTags[tag] === nodeA.symbolicTags[tag]
+            if (!nodeA.symbolicTags || !nodeB.symbolicTags) continue;
+
+            const tagsA = nodeA.symbolicTags;
+            const tagsB = nodeB.symbolicTags;
+
+            const sharedTags = Object.keys(tagsA).filter(tag => 
+                tagsB[tag] === tagsA[tag]
             );
 
             if (sharedTags.length > 0) {

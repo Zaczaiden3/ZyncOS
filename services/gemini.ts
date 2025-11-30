@@ -87,6 +87,7 @@ export async function decodeAudioData(
 const MODEL_REFLEX = "nvidia/nemotron-nano-12b-v2-vl:free"; // Fast, Tactical
 const MODEL_MEMORY = "kwaipilot/kat-coder-pro:free"; // Deep, Code-focused
 const MODEL_CONSENSUS = "gemini-2.0-flash"; // Reliable Fallback
+const MODEL_FALLBACK = "gemini-2.0-flash"; // Universal Fallback
 const MODEL_EMBEDDING = "text-embedding-004";
 const MODEL_TTS = "gemini-2.5-flash-preview-tts";
 
@@ -242,11 +243,14 @@ export async function* generateReflexResponseStream(
       if (attachmentData && attachmentType === 'text') {
           messages[messages.length - 1].content += `\n\n[Attached File]:\n${attachmentData}`;
       }
-      // Note: Image attachments for OpenRouter require specific handling (URL or base64 in content array). 
-      // For simplicity, we'll skip image attachment for OpenRouter in this iteration or assume text-only.
-
-      yield* streamOpenRouter(MODEL_REFLEX, messages, nvidiaKey || "");
-      return;
+      
+      try {
+        yield* streamOpenRouter(MODEL_REFLEX, messages, nvidiaKey || "");
+        return;
+      } catch (error) {
+        console.warn("Reflex (OpenRouter) failed. Switching to Fallback Core:", error);
+        // Fallthrough to Gemini implementation
+      }
   }
 
   // Construct Multimodal Content (Gemini Fallback)
@@ -271,9 +275,14 @@ export async function* generateReflexResponseStream(
   }
 
   try {
+    // Determine Model: Use Fallback if primary is external/failed
+    const activeModel = (MODEL_REFLEX.includes("nvidia") || MODEL_REFLEX.includes("kwaipilot")) 
+        ? MODEL_FALLBACK 
+        : MODEL_REFLEX;
+
     // 1. First API Call (Potential Tool Call)
     const result = await ai.models.generateContentStream({
-      model: MODEL_REFLEX,
+      model: activeModel,
       contents: { parts },
       config: {
         temperature: 0.7,
@@ -354,7 +363,7 @@ export async function* generateReflexResponseStream(
         parts.push({ functionResponse: { name: name, response: { result: toolResult } } });
 
         const result2 = await ai.models.generateContentStream({
-          model: MODEL_REFLEX,
+          model: activeModel,
           contents: { parts },
           config: { temperature: 0.7 }
         });
@@ -465,9 +474,14 @@ export async function* generateMemoryAnalysisStream(
           messages[messages.length - 1].content += `\n\n[Attached File]:\n${attachmentData}`;
       }
 
-      // Use Kat Coder Key for Memory
-      yield* streamOpenRouter(MODEL_MEMORY, messages, katCoderKey || "");
-      return;
+      try {
+        // Use Kat Coder Key for Memory
+        yield* streamOpenRouter(MODEL_MEMORY, messages, katCoderKey || "");
+        return;
+      } catch (error) {
+        console.warn("Memory (OpenRouter) failed. Switching to Fallback Core:", error);
+        // Fallthrough to Gemini implementation
+      }
   }
 
   // Construct Multimodal Content (Gemini Fallback)
@@ -497,8 +511,13 @@ export async function* generateMemoryAnalysisStream(
   }
 
   try {
+    // Determine Model: Use Fallback if primary is external/failed
+    const activeModel = (MODEL_MEMORY.includes("nvidia") || MODEL_MEMORY.includes("kwaipilot")) 
+        ? MODEL_FALLBACK 
+        : MODEL_MEMORY;
+
     const result = await ai.models.generateContentStream({
-      model: MODEL_MEMORY,
+      model: activeModel,
       contents: { parts },
       config: {
         temperature: 0.4,
@@ -659,10 +678,10 @@ export async function* generateConsensusRecoveryStream(
 
   } catch (error) {
     console.error("Consensus Stream Error:", error);
-    if (errorContext && (errorContext.includes("API_KEY") || errorContext.includes("API key"))) {
-        yield { fullText: `**Configuration Error**: ${errorContext}`, done: true, latency: 0 };
+    if (errorContext && (errorContext.includes("API_KEY") || errorContext.includes("API key") || errorContext.includes("401"))) {
+        yield { fullText: `**[SYSTEM ALERT] Configuration Error**\n\nPrimary neural pathways are blocked. Please verify your API keys in the .env file.\n\nError Trace: ${errorContext}`, done: true, latency: 0 };
     } else {
-        yield { fullText: "System Critical: All redundancy layers failed. Please try again.", done: true, latency: 0 };
+        yield { fullText: `**[SYSTEM CRITICAL] Redundancy Failure**\n\nAll primary and secondary cores have failed to respond. This may be due to high network latency or model unavailability.\n\n**Recommendation**: \n1. Check your internet connection.\n2. Verify API Quotas.\n3. Try a simpler query.\n\nError Trace: ${errorContext}`, done: true, latency: 0 };
     }
   }
 }

@@ -21,6 +21,14 @@ export class Lattice {
     return this.nodes.get(id);
   }
 
+  getNodes(): LatticeNode[] {
+    return Array.from(this.nodes.values());
+  }
+
+  getEdges(): LatticeEdge[] {
+    return this.edges;
+  }
+
   // Simulate finding a path based on semantic activation
   // In a real system, this would use vector similarity search + graph traversal
   findActivationPath(startConcept: string, endConcept: string): LatticePath | null {
