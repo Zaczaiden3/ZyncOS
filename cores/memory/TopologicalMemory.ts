@@ -121,6 +121,73 @@ export class TopologicalMemory {
     });
     return ghosts;
   }
+
+  /**
+   * Dream State Optimization
+   * Clusters nodes, prunes weak connections, and consolidates memory.
+   */
+  async optimize(): Promise<{ clusters: number; pruned: number; consolidated: number }> {
+    // 1. Consolidate Duplicate Memories (Simulated Clustering)
+    // In a real system, we'd use vector similarity. Here, we use exact content match or simple substring.
+    let consolidatedCount = 0;
+    const contentMap = new Map<string, string[]>(); // content -> [ids]
+
+    this.nodes.forEach(node => {
+        const key = node.content.trim().toLowerCase();
+        if (!contentMap.has(key)) {
+            contentMap.set(key, []);
+        }
+        contentMap.get(key)?.push(node.id);
+    });
+
+    contentMap.forEach((ids, content) => {
+        if (ids.length > 1) {
+            // Keep the first one (oldest), merge others
+            const [primaryId, ...duplicates] = ids;
+            duplicates.forEach(dupId => {
+                const dupNode = this.nodes.get(dupId);
+                const primaryNode = this.nodes.get(primaryId);
+                
+                if (dupNode && primaryNode) {
+                    // Merge children
+                    primaryNode.childrenIds.push(...dupNode.childrenIds);
+                    // Merge ghosts
+                    primaryNode.ghostBranchIds.push(...dupNode.ghostBranchIds);
+                    // Boost confidence
+                    primaryNode.confidence = Math.min(1.0, primaryNode.confidence + 0.1);
+                    
+                    // Remove duplicate
+                    this.nodes.delete(dupId);
+                    consolidatedCount++;
+                }
+            });
+        }
+    });
+
+    // 2. Prune Old Ghost Branches
+    let prunedCount = 0;
+    const now = Date.now();
+    const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
+
+    for (const [id, ghost] of this.ghostBranches.entries()) {
+        if (now - ghost.timestamp > ONE_WEEK) {
+            this.ghostBranches.delete(id);
+            prunedCount++;
+        }
+    }
+
+    // 3. Update Node Confidence (Decay)
+    this.nodes.forEach(node => {
+        node.confidence = Math.max(0.1, node.confidence * 0.995);
+    });
+
+    this.save();
+    
+    // Clusters is just a metric of unique concepts remaining
+    const clusters = contentMap.size;
+
+    return { clusters, pruned: prunedCount, consolidated: consolidatedCount };
+  }
 }
 
 export const topologicalMemory = new TopologicalMemory();

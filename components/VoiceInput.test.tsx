@@ -65,7 +65,7 @@ describe('VoiceInput Component', () => {
     window.SpeechRecognition = MockSpeechRecognition as any;
     window.webkitSpeechRecognition = MockSpeechRecognition as any;
     window.AudioContext = MockAudioContext as any;
-    window.webkitAudioContext = MockAudioContext as any;
+    (window as any).webkitAudioContext = MockAudioContext;
     
     Object.defineProperty(global.navigator, 'mediaDevices', {
       value: {

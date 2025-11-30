@@ -98,12 +98,86 @@ export const systemStatusTool: ToolDefinition = {
   execute: getSystemStatus,
 };
 
+// 4. Web Search (Simulated)
+const searchWeb = async ({ query }: { query: string }) => {
+  const apiKey = import.meta.env.VITE_SERPER_API_KEY;
+
+  if (!apiKey) {
+    console.warn("VITE_SERPER_API_KEY not found. Falling back to simulated search.");
+    // Fallback to simulation if no key is provided
+    await new Promise(resolve => setTimeout(resolve, 800));
+    return JSON.stringify({
+      results: [
+        {
+          title: `[SIMULATED] ${query} - Wikipedia`,
+          snippet: `This is a simulated search result because VITE_SERPER_API_KEY is missing. To enable real search, add your Serper.dev API key to .env file.`,
+          url: `https://en.wikipedia.org/wiki/${encodeURIComponent(query)}`
+        },
+        {
+          title: `[SIMULATED] Latest News: ${query}`,
+          snippet: `Real web search requires an API key. Please configure the application settings.`,
+          url: `https://news.example.com/${encodeURIComponent(query)}`
+        }
+      ]
+    });
+  }
+
+  try {
+    const response = await fetch("https://google.serper.dev/search", {
+      method: "POST",
+      headers: {
+        "X-API-KEY": apiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ q: query }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Serper API error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    // Transform Serper format to our tool format
+    const results = data.organic?.map((item: any) => ({
+      title: item.title,
+      snippet: item.snippet,
+      url: item.link
+    })) || [];
+
+    return JSON.stringify({ results: results.slice(0, 5) });
+  } catch (error) {
+    console.error("Web search failed:", error);
+    return JSON.stringify({ error: "Failed to perform web search. Please check your API key and network connection." });
+  }
+};
+
+export const webSearchTool: ToolDefinition = {
+  name: "web_search",
+  declaration: {
+    name: "web_search",
+    description: "Search the web for information. Use this when you need current events, facts, or external knowledge.",
+    parameters: {
+      type: SchemaType.OBJECT as any,
+      properties: {
+        query: {
+          type: SchemaType.STRING as any,
+          description: "The search query.",
+        },
+      },
+      required: ["query"],
+    },
+  },
+  execute: searchWeb,
+};
+
 // --- Registry ---
 
 export const availableTools: ToolDefinition[] = [
   calculatorTool,
   timeTool,
   systemStatusTool,
+  webSearchTool,
 ];
 
 export const toolDeclarations = availableTools.map(t => t.declaration);

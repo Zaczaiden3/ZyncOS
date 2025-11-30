@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef, Suspense, useMemo } from 'react';
+import { SpeechProvider, useSpeechContext } from './contexts/SpeechContext';
+import { Volume2, VolumeX, Send, Activity, Terminal, Command, Menu, ArrowDown, Paperclip, ImageIcon, Trash2, RefreshCw, Download, Lock, Network, Users, Plus, FileJson, Layers, Edit3, Settings, Moon, Sun } from 'lucide-react';
+import { dreamService } from './services/dreamService';
 import { AIRole, Message, SystemStats } from './types';
 import { generateReflexResponseStream, generateMemoryAnalysisStream, generateConsensusRecoveryStream, generateConsensusDebateStream } from './services/gemini';
 import MessageItem from './components/MessageItem';
 import CommandPalette, { CommandOption } from './components/CommandPalette';
 import DataStreamBackground from './components/DataStreamBackground';
 import VoiceInput from './components/VoiceInput';
-
+import VoiceSettings from './components/VoiceSettings';
 import { memoryStore } from './services/vectorDb';
-import { Send, Activity, Terminal, Command, Menu, ArrowDown, Paperclip, ImageIcon, Trash2, RefreshCw, Download, Lock, Network, Users, Plus, FileJson, Layers, Edit3 } from 'lucide-react';
 import { neuroSymbolicCore } from './cores/neuro-symbolic/NeuroSymbolicCore';
 import { LatticeNode, LatticeEdge } from './cores/neuro-symbolic/types';
 import { topologicalMemory } from './cores/memory/TopologicalMemory';
@@ -15,10 +17,23 @@ import { personaSimulator } from './cores/simulation/PersonaSimulator';
 import { sessionManager, ChatSession } from './services/sessionManager';
 import { subscribeToAuthChanges, logoutUser } from './services/auth';
 
-
 // Lazy Load Heavy Components for Performance Optimization
 const SystemVisualizer = React.lazy(() => import('./components/SystemVisualizer'));
 const LoginPage = React.lazy(() => import('./components/LoginPage'));
+
+// Mute Toggle Component
+const MuteToggle = () => {
+  const { isMuted, toggleMute } = useSpeechContext();
+  return (
+    <button
+      onClick={toggleMute}
+      className={`p-2 rounded-lg transition-all duration-300 ${isMuted ? 'text-slate-500 hover:text-slate-300' : 'text-cyan-400 hover:text-cyan-300 bg-cyan-500/10'}`}
+      title={isMuted ? "Unmute Audio" : "Mute Audio"}
+    >
+      {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+    </button>
+  );
+};
 
 // Loading Fallback Component
 const CoreLoader = () => (
@@ -27,7 +42,7 @@ const CoreLoader = () => (
   </div>
 );
 
-export default function App() {
+function App() {
   // Authentication State
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return localStorage.getItem('ZYNC_AUTH_STATE') === 'true';
@@ -50,7 +65,30 @@ export default function App() {
     setCurrentSession(active);
     setMessages(active.messages);
   }, []);
+
   const [isSystemGlitching, setIsSystemGlitching] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isDreaming, setIsDreaming] = useState(false);
+  const [dreamStatus, setDreamStatus] = useState<string | null>(null);
+
+  const handleDreamToggle = () => {
+    if (isDreaming) {
+      dreamService.stopDreaming();
+      setIsDreaming(false);
+      setDreamStatus(null);
+    } else {
+      setIsDreaming(true);
+      dreamService.startDreaming((status) => {
+        setDreamStatus(status);
+        if (status === "DREAM_COMPLETE") {
+            setTimeout(() => {
+                setIsDreaming(false);
+                setDreamStatus(null);
+            }, 2000);
+        }
+      });
+    }
+  };
 
   const [input, setInput] = useState('');
   // Image state
@@ -108,8 +146,6 @@ export default function App() {
       }]);
     }
   };
-
-
 
   const handleDeleteSession = (sessionId: string) => {
     sessionManager.deleteSession(sessionId);
@@ -1032,6 +1068,8 @@ export default function App() {
         />
       )}
 
+      {isSettingsOpen && <VoiceSettings onClose={() => setIsSettingsOpen(false)} />}
+
       <div className={`
         fixed inset-y-0 left-0 z-50 w-80 bg-slate-950/95 backdrop-blur-2xl border-r border-slate-800/50 transform transition-transform duration-300 ease-in-out shadow-2xl
         md:relative md:translate-x-0 md:w-80 md:bg-slate-950/50 md:backdrop-blur-xl md:shadow-[10px_0_30px_-10px_rgba(0,0,0,0.5)]
@@ -1044,6 +1082,7 @@ export default function App() {
             isMemoryActive={isMemoryActive}
             onClose={() => setMobileMenuOpen(false)}
             lattice={activeLattice}
+            isDreaming={isDreaming}
             />
         </Suspense>
       </div>
@@ -1069,12 +1108,35 @@ export default function App() {
           </div>
           
           <div className="flex items-center gap-4 md:gap-6">
+             <MuteToggle />
+             <button
+               onClick={() => setIsSettingsOpen(true)}
+               className="p-2 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all"
+               title="Voice Settings"
+             >
+               <Settings size={18} />
+             </button>
+
+             <button
+               onClick={handleDreamToggle}
+               className={`p-2 rounded-lg transition-all ${isDreaming ? 'text-fuchsia-400 bg-fuchsia-500/10 animate-pulse' : 'text-slate-400 hover:text-fuchsia-400 hover:bg-fuchsia-500/10'}`}
+               title={isDreaming ? "Wake System" : "Enter Dream State"}
+             >
+               {isDreaming ? <Moon size={18} className="fill-current" /> : <Moon size={18} />}
+             </button>
+
              <div className="group flex flex-col items-end cursor-default hidden md:flex">
                 <div className="flex items-center gap-2 text-xs font-mono text-slate-400 group-hover:text-cyan-400 transition-colors">
-                   <Activity size={14} />
-                   <span>SYNC_RATE</span>
+                   {isDreaming ? (
+                       <span className="text-fuchsia-400 animate-pulse">{dreamStatus || "DREAMING..."}</span>
+                   ) : (
+                       <>
+                        <Activity size={14} />
+                        <span>SYNC_RATE</span>
+                       </>
+                   )}
                 </div>
-                <span className="text-lg font-bold font-mono text-slate-200 tabular-nums">{systemStats.syncRate.toFixed(1)}%</span>
+                {!isDreaming && <span className="text-lg font-bold font-mono text-slate-200 tabular-nums">{systemStats.syncRate.toFixed(1)}%</span>}
              </div>
              
              <div className="w-px h-6 md:h-8 bg-slate-800 hidden md:block"></div>
@@ -1257,5 +1319,13 @@ export default function App() {
 
       </div>
     </div>
+  );
+}
+
+export default function AppWrapper() {
+  return (
+    <SpeechProvider>
+      <App />
+    </SpeechProvider>
   );
 }

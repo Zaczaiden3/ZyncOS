@@ -146,6 +146,54 @@ export class NeuroSymbolicCore {
       graph: subgraph
     };
   }
+  public async dream(): Promise<{ newEdges: number; insights: string[] }> {
+    const nodes = this.lattice.getNodes();
+    let newEdgesCount = 0;
+    const insights: string[] = [];
+
+    // 1. Find potential connections between disparate concepts (Creative Association)
+    for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+            const nodeA = nodes[i];
+            const nodeB = nodes[j];
+
+            // Skip if already connected
+            if (this.lattice.getEdges().some(e => 
+                (e.sourceId === nodeA.id && e.targetId === nodeB.id) || 
+                (e.sourceId === nodeB.id && e.targetId === nodeA.id)
+            )) continue;
+
+            // Check for shared symbolic tags (Heuristic Match)
+            const sharedTags = Object.keys(nodeA.symbolicTags).filter(tag => 
+                nodeB.symbolicTags[tag] === nodeA.symbolicTags[tag]
+            );
+
+            if (sharedTags.length > 0) {
+                // Create a new "Dreamt" connection
+                this.lattice.addEdge({
+                    sourceId: nodeA.id,
+                    targetId: nodeB.id,
+                    relationType: 'thematically_linked',
+                    weight: 0.4 // Low weight for dreamt connections
+                });
+                newEdgesCount++;
+                insights.push(`Linked [${nodeA.label}] and [${nodeB.label}] via shared context: ${sharedTags.join(', ')}`);
+            } else if (Math.random() > 0.95) {
+                // Random "Mutation" / Creative Leap
+                 this.lattice.addEdge({
+                    sourceId: nodeA.id,
+                    targetId: nodeB.id,
+                    relationType: 'hypothetical_link',
+                    weight: 0.2
+                });
+                newEdgesCount++;
+                insights.push(`Hypothesized connection between [${nodeA.label}] and [${nodeB.label}]`);
+            }
+        }
+    }
+
+    return { newEdges: newEdgesCount, insights };
+  }
 }
 
 export const neuroSymbolicCore = new NeuroSymbolicCore();

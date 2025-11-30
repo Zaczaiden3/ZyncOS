@@ -333,6 +333,22 @@ export async function* generateReflexResponseStream(
         
         yield { fullText: `*Plugin Executed. Analyzing result...*`, done: false, tokens: totalTokens };
         
+        // Extract sources from web_search tool result
+        if (name === 'web_search') {
+            try {
+                const parsedResult = JSON.parse(toolResult);
+                if (parsedResult.results && Array.isArray(parsedResult.results)) {
+                    const searchSources = parsedResult.results.map((r: any) => ({
+                        title: r.title,
+                        uri: r.url
+                    }));
+                    accumulatedSources = [...accumulatedSources, ...searchSources];
+                }
+            } catch (e) {
+                console.warn("Failed to parse web_search results for sources", e);
+            }
+        }
+
         // Add tool result to history for the model
         parts.push({ functionCall: functionCallPart });
         parts.push({ functionResponse: { name: name, response: { result: toolResult } } });

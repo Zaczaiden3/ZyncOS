@@ -74,7 +74,8 @@ interface SystemVisualizerProps {
   isMemoryActive: boolean;
   onClose?: () => void;
   lattice?: { nodes: LatticeNode[], edges: LatticeEdge[] };
-  config?: VisualizerConfig; // New Logical Parameter
+  config?: VisualizerConfig;
+  isDreaming?: boolean;
 }
 
 const SystemVisualizer: React.FC<SystemVisualizerProps> = ({ 
@@ -83,7 +84,8 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
   isMemoryActive, 
   onClose, 
   lattice,
-  config = {} as VisualizerConfig 
+  config = {} as VisualizerConfig,
+  isDreaming = false
 }) => {
   // Apply Default Logical Parameters
   const {
@@ -245,22 +247,22 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
               {/* Memory Card */}
               <div className={`
                   relative p-4 rounded-xl border backdrop-blur-md transition-all duration-500 overflow-hidden group cursor-default
-                  ${isMemoryActive ? 'border-fuchsia-500/50 bg-fuchsia-950/20 shadow-[0_0_20px_-5px_rgba(217,70,239,0.3)]' : 'border-slate-800/50 bg-slate-900/20 hover:border-slate-700'}
+                  ${isMemoryActive || isDreaming ? 'border-fuchsia-500/50 bg-fuchsia-950/20 shadow-[0_0_20px_-5px_rgba(217,70,239,0.3)]' : 'border-slate-800/50 bg-slate-900/20 hover:border-slate-700'}
               `}>
               <div className={`
                   absolute -right-4 -top-4 w-24 h-24 bg-fuchsia-500/20 rounded-full blur-2xl 
                   transition-all duration-700
-                  ${isMemoryActive ? 'opacity-100 animate-pulse' : 'opacity-40 animate-breathing-slow'}
+                  ${(isMemoryActive || isDreaming) ? 'opacity-100 animate-pulse' : 'opacity-40 animate-breathing-slow'}
                   group-hover:opacity-80 group-hover:scale-110 group-hover:blur-3xl
               `}></div>
 
               <div className="flex justify-between items-start mb-4 relative z-10">
-                  <Database className={`w-5 h-5 transition-colors duration-300 ${isMemoryActive ? 'text-fuchsia-400' : 'text-slate-600 group-hover:text-fuchsia-400/70'}`} />
-                  <div className={`w-2 h-2 rounded-full transition-colors duration-300 ${isMemoryActive ? 'bg-fuchsia-400 shadow-[0_0_8px_rgba(232,121,249,0.8)]' : 'bg-slate-800 group-hover:bg-fuchsia-900 animate-breathing-slow'}`}></div>
+                  <Database className={`w-5 h-5 transition-colors duration-300 ${isMemoryActive || isDreaming ? 'text-fuchsia-400' : 'text-slate-600 group-hover:text-fuchsia-400/70'}`} />
+                  <div className={`w-2 h-2 rounded-full transition-colors duration-300 ${isMemoryActive || isDreaming ? 'bg-fuchsia-400 shadow-[0_0_8px_rgba(232,121,249,0.8)]' : 'bg-slate-800 group-hover:bg-fuchsia-900 animate-breathing-slow'}`}></div>
               </div>
               <div className="text-[10px] font-mono text-slate-500 mb-1">MEMORY_CORE</div>
-              <div className={`text-sm font-bold tracking-wider transition-colors duration-300 ${isMemoryActive ? 'text-fuchsia-100' : 'text-slate-400 group-hover:text-slate-300'}`}>
-                  {isMemoryActive ? 'ANALYZING' : 'SYNCED'}
+              <div className={`text-sm font-bold tracking-wider transition-colors duration-300 ${isMemoryActive || isDreaming ? 'text-fuchsia-100' : 'text-slate-400 group-hover:text-slate-300'}`}>
+                  {isMemoryActive ? 'ANALYZING' : (isDreaming ? 'DREAMING' : 'SYNCED')}
               </div>
               </div>
           </div>

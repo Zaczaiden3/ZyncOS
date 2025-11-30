@@ -2,7 +2,10 @@ import React from 'react';
 import { Message, AIRole } from '../types';
 import { User, Zap, BrainCircuit, Clock, CheckCircle2, Globe, ExternalLink, ShieldAlert, ImageIcon, FileText, Network, Copy, Check } from 'lucide-react';
 import TTSPlayer from './TTSPlayer';
+import ComponentRenderer from './generative/ComponentRenderer';
 import './MessageItem.css';
+
+const COMPONENT_REGEX = /(:::component[\s\S]*?:::)/g;
 
 interface MessageItemProps {
   message: Message;
@@ -133,7 +136,22 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
             {/* Content or Loading State */}
             {message.text ? (
                 <div className="selection:bg-cyan-500/30">
-                    <FormattedText text={message.text} role={message.role} />
+                    {message.text.split(COMPONENT_REGEX).map((part, index) => {
+                        if (part.startsWith(':::component')) {
+                            const jsonContent = part.replace(/^:::component/, '').replace(/:::$/, '').trim();
+                            try {
+                                const config = JSON.parse(jsonContent);
+                                return <ComponentRenderer key={index} config={config} />;
+                            } catch (e) {
+                                return (
+                                    <div key={index} className="p-2 border border-red-500/30 bg-red-500/10 rounded text-xs font-mono text-red-400">
+                                        [RENDER_ERROR: INVALID_COMPONENT_DATA]
+                                    </div>
+                                );
+                            }
+                        }
+                        return <FormattedText key={index} text={part} role={message.role} />;
+                    })}
                 </div>
             ) : (
                 <div className="flex items-center gap-3 py-2 pl-1 select-none">
@@ -174,7 +192,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
 
             {/* --- Text-to-Speech Player Integration --- */}
             {message.text && !isUser && (
-                <TTSPlayer text={message.text} role={message.role} />
+                <div className="mt-2 flex justify-end">
+                    <TTSPlayer text={message.text} role={message.role} />
+                </div>
             )}
 
           </div>

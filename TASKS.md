@@ -67,22 +67,23 @@
 
 ## Phase 4: Cognitive Expansion & Multi-Modal Synthesis
 
-- [ ] **Text-to-Speech (TTS) Synthesis**
+- [x] **Text-to-Speech (TTS) Synthesis**
 
-  - [ ] Implement `VoiceSynthesisService` using Web Speech API or external API (e.g., ElevenLabs).
-  - [ ] Add "Speak" button to `MessageItem` for reading responses.
-  - [ ] Create a "Mute/Unmute" global toggle in the UI.
+  - [x] Implement `VoiceSynthesisService` using Web Speech API or external API (e.g., ElevenLabs).
+  - [x] Add "Speak" button to `MessageItem` for reading responses.
+  - [x] Create a "Mute/Unmute" global toggle in the UI.
+  - [x] Implement Voice Configuration UI (Voice selection, Rate, Pitch).
 
-- [ ] **Generative UI Components**
+- [x] **Generative UI Components**
 
-  - [ ] Allow the AI to render React components (e.g., charts, tables, code blocks) dynamically based on context.
-  - [ ] Create a `ComponentRenderer` to safely parse and display these elements.
+  - [x] Allow the AI to render React components (e.g., charts, tables, code blocks) dynamically based on context.
+  - [x] Create a `ComponentRenderer` to safely parse and display these elements.
 
-- [ ] **"Dream State" Memory Optimization**
+- [x] **"Dream State" Memory Optimization**
 
-  - [ ] Implement a background process that clusters and refines topological memory when the system is idle.
-  - [ ] Visualize this "dreaming" process in the `SystemVisualizer`.
+  - [x] Implement a background process that clusters and refines topological memory when the system is idle.
+  - [x] Visualize this "dreaming" process in the `SystemVisualizer`.
 
-- [ ] **External Knowledge Integration**
-  - [ ] Connect `Reflex` core to a real web search API (e.g., Tavily, Serper) for up-to-date information.
-  - [ ] Display citations and sources in the UI.
+- [x] **External Knowledge Integration**
+  - [x] Connect `Reflex` core to a real web search API (e.g., Tavily, Serper) for up-to-date information.
+  - [x] Display citations and sources in the UI.
