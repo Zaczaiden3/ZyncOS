@@ -28,7 +28,7 @@ export class WorkflowEngine {
     this.listeners.forEach(listener => listener([...this.executionLogs]));
   }
 
-  async executeWorkflow(workflowId: string, initialInput: any): Promise<any> {
+  async executeWorkflow(workflowId: string, initialInput: any): Promise<Map<string, any>> {
     const workflow = this.workflows.get(workflowId);
     if (!workflow) {
       throw new Error(`Workflow ${workflowId} not found`);
