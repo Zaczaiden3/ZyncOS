@@ -106,3 +106,34 @@ body {
 .animate-pulse-subtle {
   animation: pulse-subtle 3s ease-in-out infinite;
 }
+
+/* Dream State & Offline Mode Effects */
+@keyframes dream-pulse {
+  0%, 100% { box-shadow: inset 0 0 50px rgba(217, 70, 239, 0.1); }
+  50% { box-shadow: inset 0 0 150px rgba(217, 70, 239, 0.25); }
+}
+
+.dream-active {
+  animation: dream-pulse 6s ease-in-out infinite;
+}
+
+.offline-active {
+  border: 1px solid rgba(245, 158, 11, 0.3); /* Amber-500 */
+  box-shadow: inset 0 0 30px rgba(245, 158, 11, 0.1);
+}
+
+/* Floating Particles for Dream Mode */
+.dream-particle {
+  position: absolute;
+  background: rgba(217, 70, 239, 0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: float-up 10s linear infinite;
+}
+
+@keyframes float-up {
+  0% { transform: translateY(100vh) scale(0); opacity: 0; }
+  20% { opacity: 0.6; }
+  80% { opacity: 0.6; }
+  100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+}

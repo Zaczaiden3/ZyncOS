@@ -371,28 +371,52 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
                 <h3 className="text-[10px] font-mono text-slate-500 mb-3 flex items-center gap-2 uppercase tracking-wider">
                 <BarChart3 size={12} /> Heuristics (Conf)
                 </h3>
-                <div className="bg-slate-900/30 rounded-lg border border-slate-800 p-4 space-y-4">
+                <div className="bg-slate-900/30 rounded-lg border border-slate-800 p-4 space-y-4 relative">
+                    {/* Legend/Tooltip for Threshold */}
+                    <div className="absolute top-2 right-2 text-[8px] text-slate-600 font-mono flex items-center gap-1">
+                        <div className="w-0.5 h-2 bg-red-500/50"></div>
+                        <span>TRIGGER (85%)</span>
+                    </div>
+
                     <div className="flex items-center gap-3">
                         <span className="text-[10px] font-mono text-cyan-400 w-8">REF</span>
-                        <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden relative">
+                        <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden relative group">
+                            {/* Threshold Marker */}
+                            <div className="absolute top-0 bottom-0 w-px bg-red-500/50 z-20" style={{ left: '85%' }}></div>
+                            
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-45 animate-shimmer z-10"></div>
                             <ConfBar 
                                 width={safeStats.reflexConfidence} 
-                                className="conf-bar bg-gradient-to-r from-cyan-600 to-cyan-400 h-full transition-all duration-500 ease-out shadow-[0_0_8px_rgba(34,211,238,0.5)] relative z-0"
+                                className={`conf-bar h-full transition-all duration-500 ease-out relative z-0 ${
+                                    safeStats.reflexConfidence < 85 
+                                    ? 'bg-gradient-to-r from-amber-600 to-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]' 
+                                    : 'bg-gradient-to-r from-cyan-600 to-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.5)]'
+                                }`}
                             />
                         </div>
-                        <span className="text-[10px] font-mono text-slate-300 w-8 text-right">{safeStats.reflexConfidence.toFixed(0)}%</span>
+                        <span className={`text-[10px] font-mono w-8 text-right ${safeStats.reflexConfidence < 85 ? 'text-amber-400 font-bold' : 'text-slate-300'}`}>
+                            {safeStats.reflexConfidence.toFixed(0)}%
+                        </span>
                     </div>
                     <div className="flex items-center gap-3">
                         <span className="text-[10px] font-mono text-fuchsia-400 w-8">MEM</span>
-                        <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden relative">
+                        <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden relative group">
+                            {/* Threshold Marker */}
+                            <div className="absolute top-0 bottom-0 w-px bg-red-500/50 z-20" style={{ left: '85%' }}></div>
+
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-45 animate-shimmer z-10"></div>
                             <ConfBar 
                                 width={safeStats.memoryConfidence} 
-                                className="conf-bar bg-gradient-to-r from-fuchsia-600 to-fuchsia-400 h-full transition-all duration-500 ease-out shadow-[0_0_8px_rgba(232,121,249,0.5)] relative z-0"
+                                className={`conf-bar h-full transition-all duration-500 ease-out relative z-0 ${
+                                    safeStats.memoryConfidence < 85 
+                                    ? 'bg-gradient-to-r from-amber-600 to-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]' 
+                                    : 'bg-gradient-to-r from-fuchsia-600 to-fuchsia-400 shadow-[0_0_8px_rgba(232,121,249,0.5)]'
+                                }`}
                             />
                         </div>
-                        <span className="text-[10px] font-mono text-slate-300 w-8 text-right">{safeStats.memoryConfidence.toFixed(0)}%</span>
+                        <span className={`text-[10px] font-mono w-8 text-right ${safeStats.memoryConfidence < 85 ? 'text-amber-400 font-bold' : 'text-slate-300'}`}>
+                            {safeStats.memoryConfidence.toFixed(0)}%
+                        </span>
                     </div>
                     <div className="flex items-center gap-3">
                         <span className="text-[10px] font-mono text-emerald-400 w-8">NEU</span>

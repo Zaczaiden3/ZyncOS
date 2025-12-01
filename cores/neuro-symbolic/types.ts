@@ -4,7 +4,7 @@ export interface LatticeNode {
   vector?: number[]; // Placeholder for embedding vector
   symbolicTags?: Record<string, string | number | boolean>;
   confidence: number;
-  type: 'concept' | 'entity' | 'rule' | 'constraint';
+  type: 'concept' | 'entity' | 'rule' | 'constraint' | 'memory';
   activationLevel?: number;
 }
 

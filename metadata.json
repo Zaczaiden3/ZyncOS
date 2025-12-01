@@ -1,6 +1,6 @@
 {
-  "name": "Zync",
-  "description": "Human-grade intuition, machine-grade precision. A dual-core AI system synchronizing reflex and memory.",
+  "name": "ZyncAI",
+  "description": "Human-grade intuition, machine-grade precision. A tri-core AI system synchronizing reflex, memory, and consensus.",
   "requestFramePermissions": [
     "microphone"
   ]

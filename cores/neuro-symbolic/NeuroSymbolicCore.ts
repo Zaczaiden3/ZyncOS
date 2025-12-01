@@ -2,6 +2,7 @@ import { Lattice } from './Lattice';
 import { LatticeNode, LatticePath } from './types';
 import { memoryStore } from '../../services/vectorDb';
 import { generateNeuroReasoning } from '../../services/gemini';
+import { topologicalMemory } from '../memory/TopologicalMemory';
 
 export class NeuroSymbolicCore {
   private lattice: Lattice;
@@ -67,6 +68,34 @@ export class NeuroSymbolicCore {
 
     // Add dynamic nodes to a temporary view of the lattice
     dynamicNodes.forEach(n => this.lattice.addNode(n));
+
+    // --- FUSION: Inject Topological Memory ---
+    const persistentNodes = topologicalMemory.getAllNodes();
+    // Simple keyword match for now (in production, use vector similarity)
+    const relevantPersistentNodes = persistentNodes.filter(n => 
+        keywords.some(k => n.content.toLowerCase().includes(k.toLowerCase()))
+    ).slice(0, 10); // Limit to top 10 relevant memories
+
+    relevantPersistentNodes.forEach(n => {
+        this.lattice.addNode({
+            id: n.id,
+            label: n.content.substring(0, 30) + '...',
+            vector: [],
+            symbolicTags: { category: 'Long-Term Memory', source: 'Topological' },
+            confidence: n.confidence,
+            type: 'memory'
+        });
+        
+        // Link to dynamic nodes
+        dynamicNodes.forEach(dn => {
+            this.lattice.addEdge({
+                sourceId: n.id,
+                targetId: dn.id,
+                relationType: 'recalls',
+                weight: 0.6
+            });
+        });
+    });
 
     // 2. Activate Subgraph (Hybrid Search)
     const subgraph = this.lattice.getActivatedSubgraph(keywords);
@@ -143,6 +172,32 @@ export class NeuroSymbolicCore {
     }
 
     return { newEdges: newEdgesCount, insights };
+  }
+
+  /**
+   * Counterfactual Persona Simulation
+   * Generates "What If" scenarios by mutating the graph.
+   */
+  public async simulateCounterfactuals(query: string): Promise<string[]> {
+      const scenarios = [];
+      
+      // Scenario 1: The Skeptic (Invert high confidence nodes)
+      const highConfNodes = this.lattice.getNodes().filter(n => n.confidence > 0.9);
+      if (highConfNodes.length > 0) {
+          const target = highConfNodes[Math.floor(Math.random() * highConfNodes.length)];
+          scenarios.push(`Counterfactual: What if [${target.label}] was FALSE? (Skeptic Persona)`);
+      }
+
+      // Scenario 2: The Visionary (Connect unrelated concepts)
+      const unrelated = this.lattice.getNodes().slice(0, 2);
+      if (unrelated.length === 2) {
+           scenarios.push(`Counterfactual: What if [${unrelated[0].label}] implies [${unrelated[1].label}]? (Visionary Persona)`);
+      }
+
+      // Scenario 3: The Engineer (Constraint relaxation)
+      scenarios.push(`Counterfactual: If we ignore resource constraints, how does the solution space expand? (Engineer Persona)`);
+
+      return scenarios;
   }
 }
 

@@ -36,11 +36,35 @@ export class TopologicalMemory {
     // Debounce or immediate save? For critical topology, immediate for now.
     // In production, move to IndexedDB or debounce.
     try {
-      localStorage.setItem(this.STORAGE_KEY_NODES, JSON.stringify(Array.from(this.nodes.values())));
-      localStorage.setItem(this.STORAGE_KEY_GHOSTS, JSON.stringify(Array.from(this.ghostBranches.values())));
+      const nodesArray = Array.from(this.nodes.values());
+      const ghostsArray = Array.from(this.ghostBranches.values());
+      
+      // Safety Check: Quota Exceeded
+      const serializedNodes = JSON.stringify(nodesArray);
+      const serializedGhosts = JSON.stringify(ghostsArray);
+      
+      if (serializedNodes.length + serializedGhosts.length > 4500000) {
+          console.warn("Topological Memory approaching localStorage limit. Pruning...");
+          this.optimize(); // Auto-prune
+      }
+
+      localStorage.setItem(this.STORAGE_KEY_NODES, serializedNodes);
+      localStorage.setItem(this.STORAGE_KEY_GHOSTS, serializedGhosts);
     } catch (e) {
       console.error("Failed to save Topological Memory", e);
     }
+  }
+
+  public clear() {
+      this.nodes.clear();
+      this.ghostBranches.clear();
+      localStorage.removeItem(this.STORAGE_KEY_NODES);
+      localStorage.removeItem(this.STORAGE_KEY_GHOSTS);
+      console.log("Topological Memory Wiped.");
+  }
+
+  public getAllNodes(): MemoryNode[] {
+      return Array.from(this.nodes.values());
   }
 
   async addMemory(content: string, parentId?: string, confidence: number = 1.0): Promise<string> {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Terminal, AlertCircle, Check, ArrowRight, Activity, Fingerprint, Lock, Mail, User, Cpu, Bug, Github, Shield } from 'lucide-react';
 import { loginUser, registerUser } from '../services/auth';
+import zyncLogo from '@/src/assets/logo.png';
 import './LoginPage.css';
 
 interface LoginPageProps {
@@ -137,6 +138,20 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGlitch }) => {
   return (
     <div className={`login-container flex flex-col items-center justify-center min-h-screen p-4 relative z-10 font-sans transition-all duration-500 ${status === 'SUCCESS' ? 'animate-warp-out' : ''} ${status === 'FAILURE' ? 'animate-glitch' : ''}`}>
       
+      {/* Background Video */}
+      <div className="absolute inset-0 overflow-hidden z-0">
+        <div className="absolute inset-0 bg-slate-950/80 z-10"></div> {/* Overlay for readability */}
+        <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+            className="w-full h-full object-cover opacity-40 grayscale hover:grayscale-0 transition-all duration-1000"
+        >
+            <source src="/src/assets/marketing.mp4" type="video/mp4" />
+        </video>
+      </div>
+      
       {/* MONOLITH CONTAINER */}
       <div className={`w-full max-w-md perspective-1000 relative transition-all duration-500 ${mode === 'signup' ? 'max-w-lg' : 'max-w-md'}`}>
         
@@ -158,12 +173,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGlitch }) => {
             </div>
 
             {/* Header */}
-            <div className="mb-10 text-center relative">
+            <div className="mb-10 text-center relative flex flex-col items-center">
                 <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-800 to-transparent -z-10"></div>
-                <h1 className="text-5xl font-mono font-bold text-slate-100 tracking-[0.15em] mb-2 glitch-text inline-block bg-slate-950 px-4" data-text="ZYNC_OS">
-                    ZYNC<span className="text-cyan-500">_</span>OS
-                </h1>
-                <p className="text-[9px] font-mono text-slate-400 uppercase tracking-[0.4em] mt-2">
+                <div className="bg-slate-950 px-6 py-2 inline-block">
+                    <img src={zyncLogo} alt="ZyncAI" className="h-16 w-auto object-contain" />
+                </div>
+                <p className="text-[9px] font-mono text-slate-400 uppercase tracking-[0.4em] mt-4">
                     Human-grade intuition v2.4
                 </p>
             </div>

@@ -10,7 +10,7 @@ import MessageItem from './components/MessageItem';
 import CommandPalette, { CommandOption } from './components/CommandPalette';
 import DataStreamBackground from './components/DataStreamBackground';
 import VoiceInput from './components/VoiceInput';
-import VoiceSettings from './components/VoiceSettings';
+
 import { memoryStore } from './services/vectorDb';
 import { neuroSymbolicCore } from './cores/neuro-symbolic/NeuroSymbolicCore';
 import { LatticeNode, LatticeEdge } from './cores/neuro-symbolic/types';
@@ -19,10 +19,44 @@ import { personaSimulator } from './cores/simulation/PersonaSimulator';
 import { sessionManager, ChatSession } from './services/sessionManager';
 import { subscribeToAuthChanges, logoutUser } from './services/auth';
 import { pluginManager } from './services/pluginManager';
+import zyncLogo from './src/assets/logo.png';
 
 // Lazy Load Heavy Components for Performance Optimization
 const SystemVisualizer = React.lazy(() => import('./components/SystemVisualizer'));
 const LoginPage = React.lazy(() => import('./components/LoginPage'));
+const VoiceSettings = React.lazy(() => import('./components/VoiceSettings'));
+
+// Dream Overlay Component
+const DreamOverlay = React.memo(() => {
+  const particles = React.useMemo(() => {
+    return [...Array(20)].map((_, i) => ({
+      left: `${Math.random() * 100}%`,
+      animationDelay: `${Math.random() * 8}s`,
+      width: `${Math.random() * 3 + 1}px`,
+      height: `${Math.random() * 3 + 1}px`,
+      opacity: Math.random() * 0.5 + 0.2
+    }));
+  }, []);
+
+  return (
+    <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-fuchsia-900/10 via-transparent to-fuchsia-900/10 mix-blend-overlay animate-pulse-subtle"></div>
+      {particles.map((p, i) => (
+        <div 
+          key={i} 
+          className="dream-particle"
+          style={{
+            left: p.left,
+            animationDelay: p.animationDelay,
+            width: p.width,
+            height: p.height,
+            opacity: p.opacity
+          }}
+        />
+      ))}
+    </div>
+  );
+});
 
 // Mute Toggle Component
 const MuteToggle = () => {
@@ -813,12 +847,18 @@ function App() {
             : msg
         ));
         
+        const confidenceMatch = update.fullText.match(/\[Confidence:\s*(\d+)%\]/);
+        const parsedConfidence = confidenceMatch ? parseInt(confidenceMatch[1]) : Math.min(99, 70 + (update.fullText.length / 10));
+        
         setSystemStats(prev => ({ 
             ...prev, 
             lastReflexTokens: finalReflexTokens,
-            reflexConfidence: Math.min(99, 70 + (update.fullText.length / 10)) 
+            reflexConfidence: parsedConfidence 
         }));
       }
+      
+      // Get final confidence from state or heuristic
+      const reflexFinalConfidence = reflexFullResponse.match(/\[Confidence:\s*(\d+)%\]/) ? parseInt(reflexFullResponse.match(/\[Confidence:\s*(\d+)%\]/)![1]) : 85;
       
       // --- AGENTIC WORKFLOW HANDLER ---
       // Check if Reflex generated a workflow JSON
@@ -893,10 +933,12 @@ function App() {
         }, 1000);
 
         let finalMemoryTokens = 0;
+        let memoryFullResponse = "";
         const memoryStartTime = Date.now();
         const memoryStream = generateMemoryAnalysisStream(userText, reflexFullResponse, augmentedHistory, userImage, userAttachmentType);
 
         for await (const update of memoryStream) {
+          memoryFullResponse = update.fullText;
           const estimatedTokens = Math.ceil(update.fullText.length / 3);
           finalMemoryTokens = update.tokens && update.tokens > 0 ? update.tokens : estimatedTokens;
           
@@ -914,9 +956,23 @@ function App() {
                 }
               : msg
           ));
+          
+          const confidenceMatch = update.fullText.match(/\[Confidence:\s*(\d+)%\]/);
+          if (confidenceMatch) {
+             setSystemStats(prev => ({ ...prev, memoryConfidence: parseInt(confidenceMatch[1]) }));
+          }
         }
         
         clearInterval(taskInterval);
+
+        // --- TRI-CORE SWITCHING LOGIC ---
+        // If both cores have low confidence (< 85%), trigger Consensus Protocol
+        const memConfMatch = memoryFullResponse.match(/\[Confidence:\s*(\d+)%\]/);
+        const memTextConfidence = memConfMatch ? parseInt(memConfMatch[1]) : 90; // Default to 90 if not found (assume high confidence if no explicit low score)
+
+        if (reflexFinalConfidence < 85 && memTextConfidence < 85) {
+             throw new Error("LOW_CONFIDENCE_TRIGGER: Reflex & Memory failed to reach 85% confidence. Engaging Consensus.");
+        }
         
         // Memory Storage
         if (userText.length > 10) {
@@ -1221,7 +1277,8 @@ function App() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden relative selection:bg-cyan-500/30 selection:text-cyan-50">
+    <div className={`flex h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden relative selection:bg-cyan-500/30 selection:text-cyan-50 transition-all duration-1000 ${isDreaming ? 'dream-active' : ''} ${isOfflineMode ? 'offline-active' : ''}`}>
+      {isDreaming && <DreamOverlay />}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-[#050a15] to-slate-900 animate-aurora z-0"></div>
       <DataStreamBackground variant="sidebar" />
       <div className="scanline-overlay"></div>
@@ -1277,7 +1334,7 @@ function App() {
                 <div className={`w-3 h-3 rounded-full shadow-inner relative z-10 transition-colors duration-300 ${isMemoryActive ? 'bg-fuchsia-400' : isReflexActive ? 'bg-cyan-400' : 'bg-cyan-600'}`}></div>
              </div>
             <div>
-              <h1 className="font-mono font-bold text-xl md:text-2xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-slate-400">ZYNC<span className="text-cyan-500">_</span>OS</h1>
+              <img src={zyncLogo} alt="ZyncAI" className="h-8 md:h-10 w-auto object-contain" />
             </div>
           </div>
           
@@ -1341,9 +1398,9 @@ function App() {
 
         {/* Offline Mode Badge */}
         {isOfflineMode && !offlineProgress && (
-           <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-amber-900/40 border border-amber-500/30 text-amber-400 px-3 py-1 rounded-full text-[10px] font-mono z-40 backdrop-blur-md flex items-center gap-2">
+           <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-amber-950/80 border border-amber-500/50 text-amber-400 px-4 py-1.5 rounded-full text-[10px] font-mono z-40 backdrop-blur-md flex items-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.3)] animate-in fade-in slide-in-from-top-4 duration-500">
              <Lock className="w-3 h-3" />
-             OFFLINE MODE
+             <span className="tracking-widest font-bold">OFFLINE MODE ACTIVE</span>
           </div>
         )}
 

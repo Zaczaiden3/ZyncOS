@@ -1,4 +1,4 @@
-# ZyncOS
+# ZyncAI
 
 **Human-grade intuition, machine-grade precision.** A tri-core AI system synchronizing reflex, memory, and consensus.
 

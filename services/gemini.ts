@@ -245,7 +245,7 @@ export async function* generateReflexResponseStream(
     3. **Defer Depth**: If a query requires deep analysis, give a surface-level answer and state "Memory Core analyzing..."
     4. **Brevity**: Keep responses under 3-4 sentences whenever possible.
     5. **Style**: Use Markdown. Bold key data points. Use arrow symbols (->) for logic flow. No conversational filler.
-    6. **Metrics**: Start with a confidence score in brackets, e.g., \`[Confidence: 98%]\`.
+    6. **Metrics**: Start your response with a confidence score in brackets, e.g., \`[Confidence: 98%]\`. This is CRITICAL for system routing.
     
     **Agentic Workflow Protocol**:
     If the user's request requires multiple steps (e.g., "Search for X, then calculate Y, then summarize"), you MUST output a JSON object representing the workflow.
@@ -470,7 +470,7 @@ export async function* generateMemoryAnalysisStream(
 
     3. **Code & Logic Scanning**: Deep scan for bugs, optimization, and state management issues if code is present.
 
-    4. **Confidence Shaders**: Explicitly state confidence levels (e.g., "99% Confidence" for facts, "Probabilistic Inference" for theories).
+    4. **Confidence Shaders**: Start your response with a confidence score in brackets, e.g., \`[Confidence: 99%]\`. Explicitly state confidence levels for specific claims.
 
     5. **Narrative Transparency**: Narrate your "thought process" to provide insight. Use terms like "Traversing Lattice", "Resolving Paradox", "Synthesizing Nodes".
 
