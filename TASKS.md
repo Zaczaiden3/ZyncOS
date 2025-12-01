@@ -93,3 +93,29 @@
   - [x] Integrate `@mlc-ai/web-llm` for local inference.
   - [x] Add UI toggle and status indicators.
   - [x] Verify offline model initialization and response generation.
+
+## Phase 5: Agentic Evolution & Governance (New)
+
+- [ ] **Agentic Workflows & Tools-as-Programs**
+
+  - [ ] **Workflow Chaining**: Allow Reflex to chain tools (search -> calc -> summarize) with visual trace.
+  - [ ] **User-Defined Tools**: Implement a simple DSL/JSON schema for custom tools.
+
+- [ ] **Memory Governance & Introspection**
+
+  - [ ] **Memory Inspector**: UI to inspect, edit, and pin nodes in TopologicalMemory.
+  - [ ] **Memory Policies**: Implement forgetting, compressing, and redacting with "memory diff".
+
+- [ ] **Persona & Consensus Research Mode**
+
+  - [ ] **Experiment Lab**: Configurable personas, controlled prompts, and exportable logs.
+  - [ ] **Evaluation Hooks**: Scoring and user ratings for answer quality.
+
+- [ ] **UX & Productization**
+
+  - [ ] **Role-Based Boards**: Executive (analytics) vs Employee (tasks) views.
+  - [ ] **Safety & Policy**: Policy modules (PII masking, restricted calls) and settings toggles.
+
+- [ ] **Technical Hardening**
+  - [ ] **Observability**: Instrument cores with metrics (latency, token usage) and "System Health" UI.
+  - [ ] **Deterministic Paths**: Schema-validated tool calls and component rendering.

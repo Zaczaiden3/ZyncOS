@@ -53,3 +53,27 @@ export interface ToolDefinition {
   declaration: FunctionDeclaration;
   execute: (args: any) => Promise<any> | any;
 }
+
+export interface WorkflowStep {
+  id: string;
+  toolName: string;
+  argsTemplate?: Record<string, any>; // Template for args, can use {{previousStepId.output}}
+  dependsOn?: string[]; // IDs of previous steps
+}
+
+export interface Workflow {
+  id: string;
+  name: string;
+  description: string;
+  steps: WorkflowStep[];
+}
+
+export interface WorkflowExecutionLog {
+  workflowId: string;
+  stepId: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  input: any;
+  output?: any;
+  error?: string;
+  timestamp: number;
+}

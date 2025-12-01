@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { SystemStats } from '../types';
+import { SystemStats, WorkflowExecutionLog } from '../types';
 import { Activity, Database, Zap, List, BarChart3, Brain, Network, ChevronRight, X, Cpu, AlertTriangle, RefreshCw, Shield, AlertCircle, Info } from 'lucide-react';
 import LatticeVisualizer from './LatticeVisualizer';
 import { LatticeNode, LatticeEdge } from '../cores/neuro-symbolic/types';
@@ -81,6 +81,7 @@ interface SystemVisualizerProps {
     reflex: { name: string; status: string };
     memory: { name: string; status: string };
   };
+  workflowLogs?: WorkflowExecutionLog[];
 }
 
 const SystemVisualizer: React.FC<SystemVisualizerProps> = ({ 
@@ -91,7 +92,8 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
   lattice,
   config = {} as VisualizerConfig,
   isDreaming = false,
-  activeModels
+  activeModels,
+  workflowLogs = []
 }) => {
   // Apply Default Logical Parameters
   const {
@@ -206,6 +208,16 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
               <div className="animate-in fade-in slide-in-from-top-4 duration-700">
                   <LatticeVisualizer nodes={lattice.nodes} edges={lattice.edges} isActive={true} />
               </div>
+          )}
+
+          {/* Workflow Trace */}
+          {workflowLogs.length > 0 && (
+            <div className="animate-in fade-in slide-in-from-top-4 duration-700">
+               <h3 className="text-[10px] font-mono text-slate-500 mb-3 flex items-center gap-2 uppercase tracking-wider">
+                  <Network size={12} /> Workflow Trace
+               </h3>
+               <WorkflowTrace logs={workflowLogs} />
+            </div>
           )}
 
           {/* Network & Quota Status */}
@@ -470,6 +482,27 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
 export default SystemVisualizer;
 
 // --- Subcomponents ---
+
+const WorkflowTrace = ({ logs }: { logs: WorkflowExecutionLog[] }) => {
+  return (
+    <div className="bg-slate-900/30 rounded-lg border border-slate-800 p-2 max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent font-mono text-[9px]">
+      {logs.map((log, i) => (
+        <div key={i} className="flex gap-2 items-center mb-1 last:mb-0">
+          <span className="text-slate-500">{new Date(log.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' })}</span>
+          <span className={`
+            ${log.status === 'completed' ? 'text-emerald-400' : 
+              log.status === 'failed' ? 'text-red-400' : 
+              log.status === 'running' ? 'text-cyan-400' : 'text-slate-400'}
+          `}>
+            [{log.status.toUpperCase()}]
+          </span>
+          <span className="text-slate-300">{log.stepId}</span>
+          {log.error && <span className="text-red-400 truncate max-w-[100px]">{log.error}</span>}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const OpsTimeline = () => {
     const [events, setEvents] = useState<OperationalEvent[]>([]);

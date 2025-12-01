@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef, Suspense, useMemo } from 'react';
 import { SpeechProvider, useSpeechContext } from './contexts/SpeechContext';
 import { Volume2, VolumeX, Send, Activity, Terminal, Command, Menu, ArrowDown, Paperclip, ImageIcon, Trash2, RefreshCw, Download, Lock, Network, Users, Plus, FileJson, Layers, Edit3, Settings, Moon, Sun } from 'lucide-react';
 import { dreamService } from './services/dreamService';
-import { AIRole, Message, SystemStats } from './types';
+import { AIRole, Message, SystemStats, WorkflowExecutionLog } from './types';
 import { generateReflexResponseStream, generateMemoryAnalysisStream, generateConsensusRecoveryStream, generateConsensusDebateStream, getCoreConfig } from './services/gemini';
+import { workflowEngine } from './services/workflowEngine';
 import MessageItem from './components/MessageItem';
 import CommandPalette, { CommandOption } from './components/CommandPalette';
 import DataStreamBackground from './components/DataStreamBackground';
@@ -107,6 +108,17 @@ function App() {
   // Neuro-Symbolic State
   const [neuroTrace, setNeuroTrace] = useState<string | null>(null);
   const [activeLattice, setActiveLattice] = useState<{ nodes: LatticeNode[], edges: LatticeEdge[] }>({ nodes: [], edges: [] });
+
+  // Workflow State
+  const [workflowLogs, setWorkflowLogs] = useState<WorkflowExecutionLog[]>([]);
+
+  // Subscribe to Workflow Engine Logs
+  useEffect(() => {
+    const unsubscribe = workflowEngine.subscribe((logs) => {
+      setWorkflowLogs(logs);
+    });
+    return () => unsubscribe();
+  }, []);
 
   // Session State
   const [currentSession, setCurrentSession] = useState<ChatSession>(() => sessionManager.getActiveSession());
@@ -1120,26 +1132,6 @@ function App() {
 
       {isSettingsOpen && <VoiceSettings onClose={() => setIsSettingsOpen(false)} />}
 
-      <div className={`
-        fixed inset-y-0 left-0 z-50 w-80 bg-slate-950/95 backdrop-blur-2xl border-r border-slate-800/50 transform transition-transform duration-300 ease-in-out shadow-2xl
-        md:relative md:translate-x-0 md:w-80 md:bg-slate-950/50 md:backdrop-blur-xl md:shadow-[10px_0_30px_-10px_rgba(0,0,0,0.5)]
-        ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-        <Suspense fallback={<CoreLoader />}>
-            <SystemVisualizer 
-            stats={systemStats} 
-            isReflexActive={isReflexActive}
-            isMemoryActive={isMemoryActive}
-            onClose={() => setMobileMenuOpen(false)}
-            lattice={activeLattice}
-            isDreaming={isDreaming}
-            activeModels={getCoreConfig()}
-            />
-        </Suspense>
-      </div>
-
-      <div className="flex-1 flex flex-col relative z-10 w-full">
-        <header className="h-16 md:h-16 border-b border-slate-800/30 bg-slate-950/30 backdrop-blur-md flex items-center justify-between px-4 md:px-8 sticky top-0 z-40 transition-all">
           <div className="flex items-center gap-4">
             <button 
                 onClick={() => setMobileMenuOpen(true)}
