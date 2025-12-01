@@ -77,6 +77,10 @@ interface SystemVisualizerProps {
   lattice?: { nodes: LatticeNode[], edges: LatticeEdge[] };
   config?: VisualizerConfig;
   isDreaming?: boolean;
+  activeModels?: {
+    reflex: { name: string; status: string };
+    memory: { name: string; status: string };
+  };
 }
 
 const SystemVisualizer: React.FC<SystemVisualizerProps> = ({ 
@@ -86,7 +90,8 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
   onClose, 
   lattice,
   config = {} as VisualizerConfig,
-  isDreaming = false
+  isDreaming = false,
+  activeModels
 }) => {
   // Apply Default Logical Parameters
   const {
@@ -227,7 +232,7 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
               <div className={`
                   relative p-4 rounded-xl border backdrop-blur-md transition-all duration-500 overflow-hidden group cursor-default
                   ${isReflexActive ? 'border-cyan-500/50 bg-cyan-950/20 shadow-[0_0_20px_-5px_rgba(6,182,212,0.3)]' : 'border-slate-800/50 bg-slate-900/20 hover:border-slate-700'}
-              `}>
+              `} title={`Model: ${activeModels?.reflex.name || 'Unknown'}`}>
               <div className={`
                   absolute -right-4 -top-4 w-24 h-24 bg-cyan-500/20 rounded-full blur-2xl 
                   transition-all duration-700 
@@ -249,7 +254,7 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
               <div className={`
                   relative p-4 rounded-xl border backdrop-blur-md transition-all duration-500 overflow-hidden group cursor-default
                   ${isMemoryActive || isDreaming ? 'border-fuchsia-500/50 bg-fuchsia-950/20 shadow-[0_0_20px_-5px_rgba(217,70,239,0.3)]' : 'border-slate-800/50 bg-slate-900/20 hover:border-slate-700'}
-              `}>
+              `} title={`Model: ${activeModels?.memory.name || 'Unknown'}`}>
               <div className={`
                   absolute -right-4 -top-4 w-24 h-24 bg-fuchsia-500/20 rounded-full blur-2xl 
                   transition-all duration-700

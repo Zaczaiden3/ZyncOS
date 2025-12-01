@@ -3,7 +3,7 @@ import { SpeechProvider, useSpeechContext } from './contexts/SpeechContext';
 import { Volume2, VolumeX, Send, Activity, Terminal, Command, Menu, ArrowDown, Paperclip, ImageIcon, Trash2, RefreshCw, Download, Lock, Network, Users, Plus, FileJson, Layers, Edit3, Settings, Moon, Sun } from 'lucide-react';
 import { dreamService } from './services/dreamService';
 import { AIRole, Message, SystemStats } from './types';
-import { generateReflexResponseStream, generateMemoryAnalysisStream, generateConsensusRecoveryStream, generateConsensusDebateStream } from './services/gemini';
+import { generateReflexResponseStream, generateMemoryAnalysisStream, generateConsensusRecoveryStream, generateConsensusDebateStream, getCoreConfig } from './services/gemini';
 import MessageItem from './components/MessageItem';
 import CommandPalette, { CommandOption } from './components/CommandPalette';
 import DataStreamBackground from './components/DataStreamBackground';
@@ -1133,6 +1133,7 @@ function App() {
             onClose={() => setMobileMenuOpen(false)}
             lattice={activeLattice}
             isDreaming={isDreaming}
+            activeModels={getCoreConfig()}
             />
         </Suspense>
       </div>

@@ -89,6 +89,7 @@ export async function decodeAudioData(
 const MODEL_REFLEX = "nvidia/nemotron-nano-12b-v2-vl:free"; // Fast, Tactical
 const MODEL_MEMORY = "Zync_TNG/R1T_Chimera"; // Deep, Code-focused
 const MODEL_CONSENSUS = "gemini-2.0-flash"; // Reliable Fallback
+const MODEL_FALLBACK = "gemini-2.0-flash"; // Universal Fallback
 const MODEL_EMBEDDING = "text-embedding-004";
 const MODEL_TTS = "gemini-2.5-flash-preview-tts";
 
@@ -200,6 +201,27 @@ export async function generateSpeech(text: string, role: AIRole): Promise<string
   }
 }
 
+/**
+ * Get current core configuration for telemetry
+ */
+export function getCoreConfig() {
+  const reflexKey = nvidiaKey;
+  const memoryKey = MODEL_MEMORY.includes("Zync_TNG") ? r1tChimeraKey : katCoderKey;
+
+  return {
+    reflex: {
+      id: reflexKey ? MODEL_REFLEX : MODEL_FALLBACK,
+      name: reflexKey ? "Nvidia Nemotron 12B" : "Gemini 2.0 Flash (Fallback)",
+      status: reflexKey ? "PRIMARY_ONLINE" : "FALLBACK_MODE"
+    },
+    memory: {
+      id: memoryKey ? MODEL_MEMORY : MODEL_FALLBACK,
+      name: memoryKey ? "Zync R1T Chimera" : "Gemini 2.0 Flash (Fallback)",
+      status: memoryKey ? "PRIMARY_ONLINE" : "FALLBACK_MODE"
+    }
+  };
+}
+
 export async function* generateReflexResponseStream(
   currentInput: string,
   history: Message[],
@@ -245,8 +267,13 @@ export async function* generateReflexResponseStream(
           messages[messages.length - 1].content += `\n\n[Attached File]:\n${attachmentData}`;
       }
 
+      // Validate Key
+      if (!nvidiaKey) {
+          throw new Error("Missing VITE_NVIDIA_KEY. Reflex Core cannot function.");
+      }
+
       try {
-          yield* streamOpenRouter(MODEL_REFLEX, messages, nvidiaKey || "");
+          yield* streamOpenRouter(MODEL_REFLEX, messages, nvidiaKey);
           return;
       } catch (e) {
           console.warn("OpenRouter failed, falling back to Gemini", e);
@@ -277,7 +304,7 @@ export async function* generateReflexResponseStream(
   try {
     // 1. First API Call (Potential Tool Call)
     const result = await ai.models.generateContentStream({
-      model: MODEL_REFLEX,
+      model: MODEL_FALLBACK,
       contents: { parts },
       config: {
         temperature: 0.7,
@@ -358,7 +385,7 @@ export async function* generateReflexResponseStream(
         parts.push({ functionResponse: { name: name, response: { result: toolResult } } });
 
         const result2 = await ai.models.generateContentStream({
-          model: MODEL_REFLEX,
+          model: MODEL_FALLBACK,
           contents: { parts },
           config: { temperature: 0.7 }
         });
@@ -471,7 +498,12 @@ export async function* generateMemoryAnalysisStream(
 
       // Select Key
       const key = MODEL_MEMORY.includes("Zync_TNG") ? r1tChimeraKey : katCoderKey;
-      yield* streamOpenRouter(MODEL_MEMORY, messages, key || "");
+      
+      if (!key) {
+          throw new Error(`Missing API Key for ${MODEL_MEMORY}. Please check VITE_R1T_CHIMERA_KEY or VITE_KAT_CODER_KEY.`);
+      }
+
+      yield* streamOpenRouter(MODEL_MEMORY, messages, key);
       return;
   }
 
@@ -503,7 +535,7 @@ export async function* generateMemoryAnalysisStream(
 
   try {
     const result = await ai.models.generateContentStream({
-      model: MODEL_MEMORY,
+      model: MODEL_FALLBACK,
       contents: { parts },
       config: {
         temperature: 0.4,
@@ -613,7 +645,7 @@ export async function* generateConsensusRecoveryStream(
     Format:
     ## [SYSTEM DIAGNOSTIC]
     - **Reflex Node**: [Status report & Error Log]
-    - **Memory Node**: [Analysis referencing Developmental Process]
+    - **Memory Node**: [Analysis referencing Developmental Process & Chimera Architecture]
     - **Consensus Engine**: [Resolution Strategy]
 
     ## [RECOVERY RESPONSE]
@@ -667,7 +699,7 @@ export async function* generateConsensusRecoveryStream(
     if (errorContext && (errorContext.includes("API_KEY") || errorContext.includes("API key"))) {
         yield { fullText: `**Configuration Error**: ${errorContext}`, done: true, latency: 0 };
     } else {
-        yield { fullText: "System Critical: All redundancy layers failed. Please try again.", done: true, latency: 0 };
+        yield { fullText: `**System Critical**: All redundancy layers failed.\n\n**Diagnostic Trace**:\n${errorContext || String(error)}`, done: true, latency: 0 };
     }
   }
 }
@@ -686,7 +718,7 @@ export async function* generateConsensusDebateStream(
     Role: You are the "Consensus Engine". You must simulate a debate between three distinct AI personas:
     1. **Reflex**: Pragmatic, fast, efficient, focuses on immediate utility and real-world application. Skeptical of over-analysis.
     2. **Memory**: Deep, historical, contextual, focuses on long-term implications, past patterns, and emotional resonance.
-    3. **Neuro**: Logical, structured, abstract, focuses on theoretical consistency, graph relationships, and first principles.
+    3. **Neuro**: Logical, structured, abstract, focuses on theoretical consistency, graph relationships, and first principles (Powered by Zync_TNG: R1T Chimera Lattice).
     
     Task:
     1. Facilitate a multi-turn debate where each persona offers their perspective on the topic.
@@ -697,7 +729,7 @@ export async function* generateConsensusDebateStream(
     ## [DEBATE SESSION]
     **Reflex**: [Argument]
     **Memory**: [Counter-argument or deeper context]
-    **Neuro**: [Logical analysis]
+    **Neuro**: [Logical analysis via Chimera Lattice]
     ... (continue for a few rounds) ...
 
     ## [SYNTHESIS & RESOLUTION]
