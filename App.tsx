@@ -910,6 +910,22 @@ function App() {
 
       setIsReflexActive(false);
 
+      // --- HIGH-SPEED PASS-THROUGH ---
+      // If Reflex is highly confident (>95%) and query is simple, skip Memory Core
+      const isSimpleQuery = userText.length < 60 && !userText.toLowerCase().includes("analyze") && !userText.toLowerCase().includes("reason");
+      if (reflexFinalConfidence > 95 && isSimpleQuery) {
+          setMessages(prev => [...prev, {
+              id: `sys-pass-${Date.now()}`,
+              role: AIRole.SYSTEM,
+              text: `**[High-Speed Pass-Through Active]**\nReflex Confidence: ${reflexFinalConfidence}%. Memory Core Bypassed for latency optimization.`,
+              timestamp: Date.now(),
+              metrics: { latency: 0, tokens: 0, confidence: 100 }
+          }]);
+          setIsReflexActive(false);
+          setSystemStats(prev => ({ ...prev, currentTask: 'SYSTEM_IDLE' }));
+          return; // EXIT EARLY
+      }
+
       // --- MEMORY CORE PHASE ---
       try {
         setIsMemoryActive(true);
@@ -964,6 +980,19 @@ function App() {
         }
         
         clearInterval(taskInterval);
+
+        // --- NEURO-SYMBOLIC VALIDATION ---
+        const validationIssues = await neuroSymbolicCore.validateConsistency(memoryFullResponse);
+        if (validationIssues.length > 0) {
+            const validationText = `\n\n**[Neuro-Symbolic Correction]**\nLogic Gate detected inconsistencies:\n${validationIssues.map(i => `- ${i}`).join('\n')}`;
+            
+            // Append to existing message
+            setMessages(prev => prev.map(msg => 
+                msg.id === memoryMsgId 
+                  ? { ...msg, text: msg.text + validationText }
+                  : msg
+            ));
+        }
 
         // --- TRI-CORE SWITCHING LOGIC ---
         // If both cores have low confidence (< 85%), trigger Consensus Protocol

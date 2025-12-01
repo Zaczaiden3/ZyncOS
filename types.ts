@@ -4,6 +4,7 @@ export enum AIRole {
   MEMORY = 'MEMORY', // Deep/Memory AI
   CONSENSUS = 'CONSENSUS', // Failsafe/Recovery AI
   NEURO = 'NEURO', // Neuro-Symbolic Core
+  SYSTEM = 'SYSTEM', // System Messages
 }
 
 export interface Message {
