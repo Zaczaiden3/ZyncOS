@@ -149,7 +149,7 @@ function App() {
   const [isDreaming, setIsDreaming] = useState(false);
   const [dreamStatus, setDreamStatus] = useState<string | null>(null);
 
-  const handleDreamToggle = () => {
+  const handleDreamToggle = React.useCallback(() => {
     if (isDreaming) {
       dreamService.stopDreaming();
       setIsDreaming(false);
@@ -166,7 +166,7 @@ function App() {
         }
       });
     }
-  };
+  }, [isDreaming]);
 
   const [input, setInput] = useState('');
   // Image state
@@ -217,7 +217,7 @@ function App() {
     }
   }, [isPaletteOpen]);
 
-  const handleSwitchSession = (sessionId: string) => {
+  const handleSwitchSession = React.useCallback((sessionId: string) => {
     const session = sessionManager.getSession(sessionId);
     if (session) {
       sessionManager.setActiveSession(sessionId);
@@ -234,15 +234,15 @@ function App() {
           metrics: { latency: 0, tokens: 0, confidence: 100 }
       }]);
     }
-  };
+  }, []);
 
-  const handleDeleteSession = (sessionId: string) => {
+  const handleDeleteSession = React.useCallback((sessionId: string) => {
     sessionManager.deleteSession(sessionId);
     const active = sessionManager.getActiveSession();
     setCurrentSession(active);
     setMessages(active.messages);
     setSessions(sessionManager.getSessions());
-  };
+  }, []);
 
   // State for System Visualizer & Layout
   const [isReflexActive, setIsReflexActive] = useState(false);
@@ -496,7 +496,7 @@ function App() {
   };
 
   // Command Actions
-  const handleClearChat = () => {
+  const handleClearChat = React.useCallback(() => {
     setMessages([
       {
         id: `init-reset-${Date.now()}`,
@@ -506,9 +506,9 @@ function App() {
         metrics: { latency: 5, tokens: 10, confidence: 100 }
       }
     ]);
-  };
+  }, []);
 
-  const handleNewSession = () => {
+  const handleNewSession = React.useCallback(() => {
     const newSession = sessionManager.createSession();
     setCurrentSession(newSession);
     setMessages(newSession.messages);
@@ -521,9 +521,9 @@ function App() {
         timestamp: Date.now(),
         metrics: { latency: 0, tokens: 0, confidence: 100 }
     }]);
-  };
+  }, []);
 
-  const handleResetSystem = () => {
+  const handleResetSystem = React.useCallback(() => {
     setMessages([
       {
         id: 'init-1',
@@ -552,9 +552,9 @@ function App() {
       neuroConfidence: 95,
       currentTask: 'SYSTEM_IDLE'
     });
-  };
+  }, []);
 
-  const handleExportLogs = () => {
+  const handleExportLogs = React.useCallback(() => {
     const jsonContent = sessionManager.exportSessionToJson(currentSession);
     const blob = new Blob([jsonContent], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -564,9 +564,9 @@ function App() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  };
+  }, [currentSession]);
 
-  const handleSimulatePersonas = async () => {
+  const handleSimulatePersonas = React.useCallback(async () => {
     const lastUserMsg = messages.slice().reverse().find(m => m.role === AIRole.USER);
     if (!lastUserMsg) return;
 
@@ -624,9 +624,9 @@ function App() {
             } : m));
         }
     }
-  };
+  }, [messages]);
 
-  const handleConsensusDebate = async () => {
+  const handleConsensusDebate = React.useCallback(async () => {
     const lastUserMsg = messages.slice().reverse().find(m => m.role === AIRole.USER);
     if (!lastUserMsg) return;
 
@@ -662,9 +662,9 @@ function App() {
     } finally {
         setIsConsensusActive(false);
     }
-  };
+  }, [messages]);
 
-  const handleLogout = async () => {
+  const handleLogout = React.useCallback(async () => {
     try {
       await logoutUser();
       setIsAuthenticated(false);
@@ -673,9 +673,9 @@ function App() {
     } catch (error) {
       console.error("Logout failed:", error);
     }
-  };
+  }, []);
 
-  const handleTestWorkflow = async () => {
+  const handleTestWorkflow = React.useCallback(async () => {
     setIsPaletteOpen(false);
     setMobileMenuOpen(false);
     
@@ -726,11 +726,11 @@ function App() {
             metrics: { latency: 0, tokens: 0, confidence: 0 }
         }]);
     }
-  };
+  }, []);
 
 
 
-  const processUserMessage = async (userText: string, userImage: string | null, userAttachmentType: 'image' | 'text' | null) => {
+  const processUserMessage = React.useCallback(async (userText: string, userImage: string | null, userAttachmentType: 'image' | 'text' | null) => {
     
     // 1. Add User Message
     // Safety: Mask PII if enabled
@@ -1095,7 +1095,7 @@ function App() {
       }
       setTimeout(() => setSystemStats(prev => ({ ...prev, currentTask: 'SYSTEM_IDLE' })), 3000);
     }
-  };
+  }, [appSettings, isOfflineMode, messages]);
 
   const handleTestMemoryPuzzle = () => {
       setIsPaletteOpen(false);

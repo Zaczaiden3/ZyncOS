@@ -503,7 +503,7 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
   );
 };
 
-export default SystemVisualizer;
+export default React.memo(SystemVisualizer);
 
 // --- Subcomponents ---
 

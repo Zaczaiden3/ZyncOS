@@ -54,6 +54,7 @@
 - [x] **Performance Optimization**
 
   - [x] Optimize React re-renders in `SystemVisualizer` (use `requestAnimationFrame` or WebGL if needed).
+  - [x] Global Re-render Optimization (App.tsx, CommandPalette, SystemVisualizer).
   - [x] Implement code splitting for heavy components.
   - [x] Optimize asset loading (images, fonts).
 
