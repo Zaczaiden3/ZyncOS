@@ -8,6 +8,12 @@
 
 .monolith-border {
   box-shadow: 0 0 40px -10px rgba(6, 182, 212, 0.1);
+  transition: box-shadow 0.5s ease, border-color 0.5s ease;
+}
+
+.monolith-border:hover {
+  box-shadow: 0 0 60px -5px rgba(6, 182, 212, 0.25);
+  border-color: rgba(6, 182, 212, 0.4);
 }
 
 .glitch-text {

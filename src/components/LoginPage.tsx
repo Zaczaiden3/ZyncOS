@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Terminal, AlertCircle, Check, ArrowRight, Activity, Fingerprint, Lock, Mail, User, Cpu, Bug, Github, Shield } from 'lucide-react';
 import { loginUser, registerUser } from '../services/auth';
 import zyncLogo from '@/assets/logo.png';
+import marketingVideo from '@/assets/marketing.mp4';
 import './LoginPage.css';
 
 interface LoginPageProps {
@@ -140,15 +141,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGlitch }) => {
       
       {/* Background Video */}
       <div className="absolute inset-0 overflow-hidden z-0">
-        <div className="absolute inset-0 bg-slate-950/80 z-10"></div> {/* Overlay for readability */}
+        <div className="absolute inset-0 bg-slate-950/80 z-10 animate-pulse-slow"></div> {/* Overlay for readability */}
         <video 
             autoPlay 
             loop 
             muted 
             playsInline
-            className="w-full h-full object-cover opacity-40 grayscale hover:grayscale-0 transition-all duration-1000"
+            className="w-full h-full object-cover opacity-40 grayscale hover:grayscale-0 transition-all duration-1000 scale-105 hover:scale-100"
         >
-            <source src="/src/assets/marketing.mp4" type="video/mp4" />
+            <source src={marketingVideo} type="video/mp4" />
         </video>
       </div>
       

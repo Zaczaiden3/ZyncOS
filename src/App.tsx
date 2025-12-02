@@ -1361,6 +1361,7 @@ function App() {
             <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-[#050a15] to-slate-900 animate-aurora z-0"></div>
             <DataStreamBackground variant="centered" isGlitching={isSystemGlitching} />
             <div className="absolute inset-0 bg-[linear-gradient(rgba(15,23,42,0.5),rgba(2,6,23,0.8)),url('https://grainy-gradients.vercel.app/noise.svg')] opacity-30 pointer-events-none z-0 mix-blend-overlay"></div>
+            <div className="scanline-overlay"></div>
             
             <LoginPage 
                 onLogin={() => setIsAuthenticated(true)} 

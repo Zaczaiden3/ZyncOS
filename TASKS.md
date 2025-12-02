@@ -21,7 +21,7 @@
   - [x] Create component tests for `SystemVisualizer`.
   - [x] **Security Audit**: Review API key usage and implement `SECURITY.md`.
   - [x] **Code Refactoring**: Move source files to `src/` directory.
-  - [x] **Gemini Service Refactor**: Implement structured chat history to prevent prompt injection.
+  - [x] **Gemini Service Refactor**: Implement structured chat history to prevent prompt injection (Removed manual context stuffing).
   - [x] **Testing Checklist**: Create a comprehensive `TESTING_CHECKLIST.md` for manual and automated testing.
 
 ## Phase 2: Zync AI Cores (New Architecture)

@@ -241,11 +241,6 @@ export async function* generateReflexResponseStream(
   attachmentType?: 'image' | 'text' | null,
   systemPromptOverride?: string
 ): AsyncGenerator<StreamUpdate, void, unknown> {
-  // Latency Optimization: Reduce context window to last 5 messages
-  const recentHistory = history.slice(-5).map(msg => 
-    `${msg.role === AIRole.USER ? 'User' : msg.role === AIRole.REFLEX ? 'Reflex' : msg.role === AIRole.MEMORY ? 'Memory' : 'Consensus'}: ${msg.text}`
-  ).join('\n');
-
   const systemPrompt = systemPromptOverride || `
     System: You are "Reflex", Zync's high-speed tactical core (System 1).
     Priority: MAXIMAL SPEED, MINIMAL LATENCY.
@@ -276,8 +271,6 @@ export async function* generateReflexResponseStream(
     }
     \`\`\`
     Do NOT execute the tools yourself if you are generating a workflow. Just output the JSON.
-    
-    ${recentHistory}
   `;
 
   // Helper to format history for Gemini
