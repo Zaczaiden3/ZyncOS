@@ -1001,7 +1001,7 @@ export async function simulatePersonas(
         contents: [{ parts: [{ text: prompt }] }]
     });
 
-    return result.response.text();
+    return result.candidates?.[0]?.content?.parts?.[0]?.text || "";
 }
 
 export async function generateReflexLogic(query: string): Promise<string> {
@@ -1016,7 +1016,7 @@ export async function generateReflexLogic(query: string): Promise<string> {
         model: MODEL_FALLBACK,
         contents: [{ parts: [{ text: `Generate a logical breakdown for: ${query}` }] }]
     });
-    return result.response.text();
+    return result.candidates?.[0]?.content?.parts?.[0]?.text || "";
 }
 
 export async function generateConsensusSummary(history: Message[]): Promise<string> {
@@ -1028,5 +1028,5 @@ export async function generateConsensusSummary(history: Message[]): Promise<stri
         model: consensusModel,
         contents: [{ parts: [{ text: `Summarize this conversation:\n${JSON.stringify(history.slice(-10))}` }] }]
     });
-    return result.response.text();
+    return result.candidates?.[0]?.content?.parts?.[0]?.text || "";
 }
