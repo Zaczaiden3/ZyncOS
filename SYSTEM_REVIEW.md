@@ -68,7 +68,9 @@ This document outlines the structured review of the ZyncAi application system, c
 
 - **Policy:** `SECURITY.md` exists but is a **template**.
 - **API Keys:** History of API key leaks. Need to ensure keys are strictly environment-variable managed (`.env`).
-- **Input Validation:** To be reviewed in `services/`.
+- **Input Validation:**
+  - `auth.ts`: Relies on Firebase Auth for validation. Client-side validation exists in `LoginPage.tsx`.
+  - `gemini.ts`: User input is embedded in prompts. Potential risk of Prompt Injection via conversation history (Context Stuffing). Recommended to switch to structured `history` arrays for Gemini API.
 
 **Action Item:** Update `SECURITY.md` with actual policies and contact info. Ensure `.env` is in `.gitignore` (it is).
 
@@ -85,5 +87,5 @@ This document outlines the structured review of the ZyncAi application system, c
 1. **Fix Testing:** Run tests and resolve the failing test case. (COMPLETED)
 2. **Refactor Structure:** Move source code into `src/` to align with standards (Optional but recommended).
 3. **Update Documentation:** Fill out `SECURITY.md`.
-4. **Verify Firebase:** Confirm Firebase usage and initialization.
-5. **Audit Code:** Run linting and address any static analysis warnings.
+4. **Verify Firebase:** Confirmed `auth.ts` uses Firebase Auth. `firebase.json` is missing, likely manual setup or only using Auth/Firestore SDKs without hosting config.
+5. **Audit Code:** `gemini.ts` uses manual history injection. Recommend refactoring to use native ChatSession or structured content arrays.

@@ -7,6 +7,23 @@ export enum AIRole {
   SYSTEM = 'SYSTEM', // System Messages
 }
 
+export enum UserRole {
+  ADMIN = 'ADMIN',
+  DEVELOPER = 'DEVELOPER', // Full access, debug tools
+  EXECUTIVE = 'EXECUTIVE', // High-level metrics, no debug
+  USER = 'USER', // Simple chat, no system internals
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  role: UserRole;
+  preferences: {
+    theme: 'dark' | 'light' | 'cyber';
+    notifications: boolean;
+  };
+}
+
 export interface Message {
   id: string;
   role: AIRole;
@@ -22,6 +39,7 @@ export interface Message {
   relatedFacts?: string[]; // For Memory AI to display extracted context
   sources?: { title: string; uri: string }[]; // Grounding sources (Real-time data)
   sentiment?: 'positive' | 'neutral' | 'negative' | 'analytical'; // Sentiment analysis of the message
+  rating?: 'up' | 'down'; // User feedback
 }
 
 export interface SystemStats {

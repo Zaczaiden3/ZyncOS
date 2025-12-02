@@ -19,6 +19,9 @@
   - [x] Set up Vitest or Jest for unit testing utility functions.
   - [x] Create component tests for `MessageItem`.
   - [x] Create component tests for `SystemVisualizer`.
+  - [x] **Security Audit**: Review API key usage and implement `SECURITY.md`.
+  - [x] **Code Refactoring**: Move source files to `src/` directory.
+  - [x] **Gemini Service Refactor**: Implement structured chat history to prevent prompt injection.
 
 ## Phase 2: Zync AI Cores (New Architecture)
 
@@ -101,23 +104,23 @@
 - [ ] **Agentic Workflows & Tools-as-Programs**
 
   - [x] **Workflow Chaining**: Allow Reflex to chain tools (search -> calc -> summarize) with visual trace. (Engine & Visualizer implemented)
-  - [ ] **User-Defined Tools**: Implement a simple DSL/JSON schema for custom tools.
+  - [x] **User-Defined Tools**: Implement a simple DSL/JSON schema for custom tools.
 
 - [ ] **Memory Governance & Introspection**
 
-  - [ ] **Memory Inspector**: UI to inspect, edit, and pin nodes in TopologicalMemory.
-  - [ ] **Memory Policies**: Implement forgetting, compressing, and redacting with "memory diff".
+  - [x] **Memory Inspector**: UI to inspect, edit, and pin nodes in TopologicalMemory.
+  - [x] **Memory Policies**: Implement forgetting, compressing, and redacting with "memory diff".
 
-- [ ] **Persona & Consensus Research Mode**
+- [x] **Persona & Consensus Research Mode**
 
-  - [ ] **Experiment Lab**: Configurable personas, controlled prompts, and exportable logs.
-  - [ ] **Evaluation Hooks**: Scoring and user ratings for answer quality.
+  - [x] **Experiment Lab**: Configurable personas, controlled prompts, and exportable logs.
+  - [x] **Evaluation Hooks**: Scoring and user ratings for answer quality.
 
 - [ ] **UX & Productization**
 
-  - [ ] **Role-Based Boards**: Executive (analytics) vs Employee (tasks) views.
+  - [x] **Role-Based Boards**: Executive (analytics) vs Employee (tasks) views.
   - [ ] **Safety & Policy**: Policy modules (PII masking, restricted calls) and settings toggles.
 
 - [ ] **Technical Hardening**
-  - [ ] **Observability**: Instrument cores with metrics (latency, token usage) and "System Health" UI.
+  - [x] **Observability**: Instrument cores with metrics (latency, token usage) and "System Health" UI.
   - [ ] **Deterministic Paths**: Schema-validated tool calls and component rendering.

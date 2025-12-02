@@ -1,6 +1,6 @@
 import React from 'react';
 import { Message, AIRole } from '../types';
-import { User, Zap, BrainCircuit, Clock, CheckCircle2, Globe, ExternalLink, ShieldAlert, ImageIcon, FileText, Network, Copy, Check } from 'lucide-react';
+import { User, Zap, BrainCircuit, Clock, CheckCircle2, Globe, ExternalLink, ShieldAlert, ImageIcon, FileText, Network, Copy, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
 import TTSPlayer from './TTSPlayer';
 import ComponentRenderer from './generative/ComponentRenderer';
 import './MessageItem.css';
@@ -18,6 +18,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
   const isConsensus = message.role === AIRole.CONSENSUS;
   const isNeuro = message.role === AIRole.NEURO;
   const [isCopied, setIsCopied] = React.useState(false);
+  const [rating, setRating] = React.useState<'up' | 'down' | null>(message.rating || null);
   const bubbleRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -33,6 +34,15 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     }
+  };
+
+  const handleRate = (newRating: 'up' | 'down') => {
+    if (rating === newRating) {
+        setRating(null);
+    } else {
+        setRating(newRating);
+    }
+    // In a real app, we'd emit an event here
   };
 
   return (
@@ -190,9 +200,25 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
               </div>
             )}
 
-            {/* --- Text-to-Speech Player Integration --- */}
+            {/* --- Text-to-Speech Player Integration & Rating --- */}
             {message.text && !isUser && (
-                <div className="mt-2 flex justify-end">
+                <div className="mt-2 flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="flex gap-1 mr-2 border-r border-slate-700/50 pr-2">
+                        <button 
+                            onClick={() => handleRate('up')}
+                            className={`p-1.5 rounded hover:bg-white/5 transition-colors ${rating === 'up' ? 'text-green-400' : 'text-slate-500 hover:text-green-300'}`}
+                            title="Helpful"
+                        >
+                            <ThumbsUp size={14} />
+                        </button>
+                        <button 
+                            onClick={() => handleRate('down')}
+                            className={`p-1.5 rounded hover:bg-white/5 transition-colors ${rating === 'down' ? 'text-red-400' : 'text-slate-500 hover:text-red-300'}`}
+                            title="Not Helpful"
+                        >
+                            <ThumbsDown size={14} />
+                        </button>
+                    </div>
                     <TTSPlayer text={message.text} role={message.role} />
                 </div>
             )}

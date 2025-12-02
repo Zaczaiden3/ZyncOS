@@ -151,8 +151,14 @@ html {
 /* Hide scrollbar for clean UI in some containers but allow scroll */
 .scrollbar-none {
   -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
 }
+
+@supports (scrollbar-width: none) {
+  .scrollbar-none {
+    scrollbar-width: none; /* Firefox */
+  }
+}
+
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }

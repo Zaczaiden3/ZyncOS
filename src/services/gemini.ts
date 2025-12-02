@@ -4,17 +4,17 @@ import { executeTool } from "./tools";
 import { pluginManager } from "./pluginManager";
 import { topologicalMemory } from '../cores/memory/TopologicalMemory';
 import { neuroSymbolicCore } from '../cores/neuro-symbolic/NeuroSymbolicCore';
+import { getSettings } from "./settings";
 
-// Initialize the client
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-const nvidiaKey = import.meta.env.VITE_NVIDIA_KEY;
-const katCoderKey = import.meta.env.VITE_KAT_CODER_KEY;
-const r1tChimeraKey = import.meta.env.VITE_R1T_CHIMERA_KEY;
-
-if (!apiKey) {
-  console.error("VITE_GEMINI_API_KEY is missing. Please add it to your .env file.");
-}
-const ai = new GoogleGenAI({ apiKey: apiKey || "dummy_key_to_prevent_crash_on_init" });
+// Initialize the client helper
+const getAiClient = () => {
+  const settings = getSettings();
+  const key = settings.geminiApiKey || import.meta.env.VITE_GEMINI_API_KEY;
+  if (!key) {
+    console.warn("Gemini API Key missing in settings and env.");
+  }
+  return new GoogleGenAI({ apiKey: key || "dummy_key" });
+};
 
 export interface StreamUpdate {
   text?: string;
@@ -87,13 +87,18 @@ export async function decodeAudioData(
   return buffer;
 }
 
-// Model Constants
-const MODEL_REFLEX = "nvidia/nemotron-nano-12b-v2-vl:free"; // Fast, Tactical
-const MODEL_MEMORY = "Zync_TNG/R1T_Chimera"; // Deep, Code-focused
-const MODEL_CONSENSUS = "gemini-2.0-flash"; // Reliable Fallback
-const MODEL_FALLBACK = "gemini-2.0-flash"; // Universal Fallback
-const MODEL_EMBEDDING = "text-embedding-004";
+// Model Constants (Defaults)
+const DEFAULT_MODEL_REFLEX = "nvidia/nemotron-nano-12b-v2-vl:free"; 
+const DEFAULT_MODEL_MEMORY = "Zync_TNG/R1T_Chimera";
+const DEFAULT_MODEL_CONSENSUS = "gemini-2.0-flash";
+const MODEL_FALLBACK = "gemini-2.0-flash";
 const MODEL_TTS = "gemini-2.5-flash-preview-tts";
+const MODEL_EMBEDDING = "text-embedding-004";
+
+// Legacy constants for compatibility
+const MODEL_REFLEX = DEFAULT_MODEL_REFLEX;
+const MODEL_MEMORY = DEFAULT_MODEL_MEMORY;
+const MODEL_CONSENSUS = DEFAULT_MODEL_CONSENSUS;
 
 /**
  * OpenRouter Streaming Helper
@@ -181,6 +186,7 @@ export async function generateSpeech(text: string, role: AIRole): Promise<string
   try {
     const voiceName = role === AIRole.MEMORY ? 'Fenrir' : 'Kore'; // Deep voice for Memory, Clear voice for Reflex
 
+    const ai = getAiClient();
     const response = await ai.models.generateContent({
       model: MODEL_TTS,
       contents: [{ parts: [{ text: text }] }],
@@ -207,19 +213,23 @@ export async function generateSpeech(text: string, role: AIRole): Promise<string
  * Get current core configuration for telemetry
  */
 export function getCoreConfig() {
-  const reflexKey = nvidiaKey;
-  const memoryKey = MODEL_MEMORY.includes("Zync_TNG") ? r1tChimeraKey : katCoderKey;
+  const settings = getSettings();
+  const reflexModel = settings.reflexModel || DEFAULT_MODEL_REFLEX;
+  const memoryModel = settings.memoryModel || DEFAULT_MODEL_MEMORY;
+  
+  const isReflexOnline = !!(settings.openRouterApiKey || import.meta.env.VITE_NVIDIA_KEY);
+  const isMemoryOnline = !!(settings.openRouterApiKey || import.meta.env.VITE_R1T_CHIMERA_KEY);
 
   return {
     reflex: {
-      id: reflexKey ? MODEL_REFLEX : MODEL_FALLBACK,
-      name: reflexKey ? "Nvidia Nemotron 12B" : "Gemini 2.0 Flash (Fallback)",
-      status: reflexKey ? "PRIMARY_ONLINE" : "FALLBACK_MODE"
+      id: reflexModel,
+      name: reflexModel.includes("nvidia") ? "Nvidia Nemotron 12B" : reflexModel,
+      status: isReflexOnline ? "PRIMARY_ONLINE" : "FALLBACK_MODE"
     },
     memory: {
-      id: memoryKey ? MODEL_MEMORY : MODEL_FALLBACK,
-      name: memoryKey ? "Zync R1T Chimera" : "Gemini 2.0 Flash (Fallback)",
-      status: memoryKey ? "PRIMARY_ONLINE" : "FALLBACK_MODE"
+      id: memoryModel,
+      name: memoryModel.includes("Zync") ? "Zync R1T Chimera" : memoryModel,
+      status: isMemoryOnline ? "PRIMARY_ONLINE" : "FALLBACK_MODE"
     }
   };
 }
@@ -267,12 +277,23 @@ export async function* generateReflexResponseStream(
     \`\`\`
     Do NOT execute the tools yourself if you are generating a workflow. Just output the JSON.
     
-    Context:
     ${recentHistory}
   `;
 
+  // Helper to format history for Gemini
+  const formatHistoryForGemini = (hist: Message[]): any[] => {
+    return hist.map(msg => ({
+      role: msg.role === AIRole.USER ? 'user' : 'model',
+      parts: [{ text: msg.text }]
+    }));
+  };
+
   // Check if using OpenRouter
-  if (MODEL_REFLEX.includes("nvidia") || MODEL_REFLEX.includes("kwaipilot")) {
+  const settings = getSettings();
+  const reflexModel = settings.reflexModel || DEFAULT_MODEL_REFLEX;
+  const openRouterKey = settings.openRouterApiKey || import.meta.env.VITE_NVIDIA_KEY; // Fallback to env
+
+  if (reflexModel.includes("nvidia") || reflexModel.includes("kwaipilot")) {
       const messages = [
           { role: "system", content: systemPrompt },
           ...history.slice(-5).map(msg => ({
@@ -282,21 +303,20 @@ export async function* generateReflexResponseStream(
           { role: "user", content: currentInput }
       ];
       
-      // Handle attachments for OpenRouter (Text only for now unless multimodal supported)
       if (attachmentData && attachmentType === 'text') {
           messages[messages.length - 1].content += `\n\n[Attached File]:\n${attachmentData}`;
       }
 
-      // Validate Key
-      if (!nvidiaKey) {
-          throw new Error("Missing VITE_NVIDIA_KEY. Reflex Core cannot function.");
-      }
-
-      try {
-          yield* streamOpenRouter(MODEL_REFLEX, messages, nvidiaKey);
-          return;
-      } catch (e) {
-          console.warn("OpenRouter failed, falling back to Gemini", e);
+      if (!openRouterKey) {
+          // Don't throw, just fall back to Gemini
+          console.warn("Missing OpenRouter Key for Reflex Core. Falling back to Gemini.");
+      } else {
+        try {
+            yield* streamOpenRouter(reflexModel, messages, openRouterKey);
+            return;
+        } catch (e) {
+            console.warn("OpenRouter failed, falling back to Gemini", e);
+        }
       }
   }
 
@@ -323,10 +343,17 @@ export async function* generateReflexResponseStream(
 
   try {
     // 1. First API Call (Potential Tool Call)
+    const contents = [
+      ...formatHistoryForGemini(history.slice(-10)), // Increased context window
+      ...parts.map(p => ({ role: 'user', parts: [p] })) // Current turn
+    ];
+
+    const ai = getAiClient();
     const result = await ai.models.generateContentStream({
       model: MODEL_FALLBACK,
-      contents: { parts },
+      contents: contents,
       config: {
+        systemInstruction: { parts: [{ text: systemPrompt }] },
         temperature: 0.7,
         maxOutputTokens: 4096,
         tools: [{ functionDeclarations: pluginManager.getToolDeclarations() }]
@@ -401,13 +428,21 @@ export async function* generateReflexResponseStream(
         }
 
         // Add tool result to history for the model
-        parts.push({ functionCall: functionCallPart });
-        parts.push({ functionResponse: { name: name, response: { result: toolResult } } });
+        // Note: For multi-turn with tools, we need to preserve the previous turns correctly.
+        // The SDK handles this if we use ChatSession, but for stateless we must reconstruct.
+        const toolHistory = [
+            ...contents,
+            { role: 'model', parts: [{ functionCall: functionCallPart }] },
+            { role: 'function', parts: [{ functionResponse: { name: name, response: { result: toolResult } } }] }
+        ];
 
         const result2 = await ai.models.generateContentStream({
           model: MODEL_FALLBACK,
-          contents: { parts },
-          config: { temperature: 0.7 }
+          contents: toolHistory,
+          config: { 
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            temperature: 0.7 
+          }
         });
 
         for await (const chunk of result2) {
@@ -519,7 +554,11 @@ export async function* generateMemoryAnalysisStream(
   `;
 
   // Check if using OpenRouter
-  if (MODEL_MEMORY.includes("nvidia") || MODEL_MEMORY.includes("kwaipilot") || MODEL_MEMORY.includes("Zync_TNG")) {
+  const settings = getSettings();
+  const memoryModel = settings.memoryModel || DEFAULT_MODEL_MEMORY;
+  const openRouterKey = settings.openRouterApiKey || import.meta.env.VITE_R1T_CHIMERA_KEY || import.meta.env.VITE_KAT_CODER_KEY;
+
+  if (memoryModel.includes("nvidia") || memoryModel.includes("kwaipilot") || memoryModel.includes("Zync_TNG")) {
       const messages = [
           { role: "system", content: systemPrompt },
           ...history.slice(-5).map(msg => ({
@@ -533,15 +572,12 @@ export async function* generateMemoryAnalysisStream(
           messages[messages.length - 1].content += `\n\n[Attached File]:\n${attachmentData}`;
       }
 
-      // Select Key
-      const key = MODEL_MEMORY.includes("Zync_TNG") ? r1tChimeraKey : katCoderKey;
-      
-      if (!key) {
-          throw new Error(`Missing API Key for ${MODEL_MEMORY}. Please check VITE_R1T_CHIMERA_KEY or VITE_KAT_CODER_KEY.`);
+      if (!openRouterKey) {
+           console.warn(`Missing API Key for ${memoryModel}. Falling back to Gemini.`);
+      } else {
+        yield* streamOpenRouter(memoryModel, messages, openRouterKey);
+        return;
       }
-
-      yield* streamOpenRouter(MODEL_MEMORY, messages, key);
-      return;
   }
 
   // Construct Multimodal Content (Gemini Fallback)
@@ -571,10 +607,20 @@ export async function* generateMemoryAnalysisStream(
   }
 
   try {
+    const contents = [
+        ...history.slice(-10).map(msg => ({
+            role: msg.role === AIRole.USER ? 'user' : 'model',
+            parts: [{ text: msg.text }]
+        })),
+        ...parts.map(p => ({ role: 'user', parts: [p] }))
+    ];
+
+    const ai = getAiClient();
     const result = await ai.models.generateContentStream({
       model: MODEL_FALLBACK,
-      contents: { parts },
+      contents: contents,
       config: {
+        systemInstruction: { parts: [{ text: systemPrompt }] },
         temperature: 0.4,
       }
     });
@@ -665,7 +711,8 @@ export async function* generateConsensusRecoveryStream(
 ): AsyncGenerator<StreamUpdate, void, unknown> {
   
   // Use Flash for fast recovery
-  const modelId = MODEL_CONSENSUS;
+  const settings = getSettings();
+  const consensusModel = settings.consensusModel || DEFAULT_MODEL_CONSENSUS;
 
   const prompt = `
     System: ALERT. CRITICAL FAILURE IN PRIMARY CORES.
@@ -692,9 +739,11 @@ export async function* generateConsensusRecoveryStream(
   `;
 
   try {
+    const ai = getAiClient();
+    
     const startTime = Date.now();
     const result = await ai.models.generateContentStream({
-      model: modelId,
+      model: consensusModel,
       contents: prompt,
       config: {
         temperature: 0.6,
@@ -753,7 +802,8 @@ export async function* generateConsensusDebateStream(
   history: Message[]
 ): AsyncGenerator<StreamUpdate, void, unknown> {
   
-  const modelId = MODEL_CONSENSUS;
+  const settings = getSettings();
+  const consensusModel = settings.consensusModel || DEFAULT_MODEL_CONSENSUS;
 
   const prompt = `
     System: INITIATE CONSENSUS DEBATE PROTOCOL.
@@ -784,9 +834,10 @@ export async function* generateConsensusDebateStream(
   `;
 
   try {
+    const ai = getAiClient();
     const startTime = Date.now();
     const result = await ai.models.generateContentStream({
-      model: modelId,
+      model: consensusModel,
       contents: prompt,
       config: {
         temperature: 0.8, // Higher temperature for more creative debate
@@ -835,6 +886,7 @@ export async function* generateConsensusDebateStream(
  */
 export async function embedText(text: string): Promise<number[]> {
   try {
+    const ai = getAiClient();
     const result = await ai.models.embedContent({
       model: MODEL_EMBEDDING,
       contents: [{ parts: [{ text }] }]
@@ -874,7 +926,11 @@ export async function generateNeuroReasoning(
   `;
 
   // Check if using OpenRouter (R1T Chimera)
-  if (MODEL_MEMORY.includes("Zync_TNG")) {
+  const settings = getSettings();
+  const memoryModel = settings.memoryModel || DEFAULT_MODEL_MEMORY;
+  const openRouterKey = settings.openRouterApiKey || import.meta.env.VITE_R1T_CHIMERA_KEY || import.meta.env.VITE_KAT_CODER_KEY;
+
+  if (memoryModel.includes("Zync_TNG")) {
       const messages = [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Query: ${query}\nContext: ${context}` }
@@ -883,7 +939,7 @@ export async function generateNeuroReasoning(
       try {
           // We need a non-streaming helper for OpenRouter, or just consume the stream
           let fullText = "";
-          for await (const update of streamOpenRouter(MODEL_MEMORY, messages, r1tChimeraKey || "")) {
+          for await (const update of streamOpenRouter(memoryModel, messages, openRouterKey || "")) {
               fullText = update.fullText;
           }
           
@@ -899,6 +955,7 @@ export async function generateNeuroReasoning(
 
   // Fallback to Gemini if R1T is not configured or fails
   try {
+    const ai = getAiClient();
     const result = await ai.models.generateContent({
       model: MODEL_CONSENSUS, // Use Flash for fallback reasoning
       contents: [{ parts: [{ text: `${systemPrompt}\n\nQuery: ${query}\nContext: ${context}` }] }]
@@ -913,4 +970,63 @@ export async function generateNeuroReasoning(
     console.error("Neuro Reasoning Error:", error);
     return { trace: "> **Error**: Reasoning module offline. Using heuristic fallback.", confidence: 0.5 };
   }
+}
+
+export async function simulatePersonas(
+    query: string,
+    history: Message[]
+): Promise<string> {
+    const ai = getAiClient();
+    const prompt = `
+    System: Simulate 3 distinct personas analyzing the user's query.
+    Query: ${query}
+    
+    Personas:
+    1. The Optimist (Focus on potential and growth)
+    2. The Realist (Focus on practicality and constraints)
+    3. The Skeptic (Focus on risks and flaws)
+    
+    Output Format:
+    ## Persona Simulation
+    **Optimist**: ...
+    **Realist**: ...
+    **Skeptic**: ...
+    
+    ## Synthesis
+    ...
+    `;
+
+    const result = await ai.models.generateContent({
+        model: MODEL_FALLBACK,
+        contents: [{ parts: [{ text: prompt }] }]
+    });
+
+    return result.response.text();
+}
+
+export async function generateReflexLogic(query: string): Promise<string> {
+    const settings = getSettings();
+    const memoryModel = settings.memoryModel || DEFAULT_MODEL_MEMORY;
+    
+    // Use Memory Model for logic if possible, else fallback
+    // Implementation simplified for now
+    
+    const ai = getAiClient();
+    const result = await ai.models.generateContent({
+        model: MODEL_FALLBACK,
+        contents: [{ parts: [{ text: `Generate a logical breakdown for: ${query}` }] }]
+    });
+    return result.response.text();
+}
+
+export async function generateConsensusSummary(history: Message[]): Promise<string> {
+    const settings = getSettings();
+    const consensusModel = settings.consensusModel || DEFAULT_MODEL_CONSENSUS;
+    const ai = getAiClient();
+
+    const result = await ai.models.generateContent({
+        model: consensusModel,
+        contents: [{ parts: [{ text: `Summarize this conversation:\n${JSON.stringify(history.slice(-10))}` }] }]
+    });
+    return result.response.text();
 }

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, Suspense, useMemo } from 'react';
 import { SpeechProvider, useSpeechContext } from './contexts/SpeechContext';
-import { Volume2, VolumeX, Send, Activity, Terminal, Command, Menu, ArrowDown, Paperclip, ImageIcon, Trash2, RefreshCw, Download, Lock, Network, Users, Plus, FileJson, Layers, Edit3, Settings, Moon, Sun } from 'lucide-react';
+import { Volume2, VolumeX, Send, Activity, Terminal, Command, Menu, ArrowDown, Paperclip, ImageIcon, Trash2, RefreshCw, Download, Lock, Network, Users, Plus, FileJson, Layers, Edit3, Settings, Moon, Sun, Code, FlaskConical } from 'lucide-react';
 import { dreamService } from './services/dreamService';
 import { AIRole, Message, SystemStats, WorkflowExecutionLog, Workflow } from './types';
+import { getSettings } from './services/settings';
 import { generateReflexResponseStream, generateMemoryAnalysisStream, generateConsensusRecoveryStream, generateConsensusDebateStream, getCoreConfig } from './services/gemini';
 import { workflowEngine } from './services/workflowEngine';
 import './services/tools'; // Register default tools
@@ -19,12 +20,16 @@ import { personaSimulator } from './cores/simulation/PersonaSimulator';
 import { sessionManager, ChatSession } from './services/sessionManager';
 import { subscribeToAuthChanges, logoutUser } from './services/auth';
 import { pluginManager } from './services/pluginManager';
-import zyncLogo from './src/assets/logo.png';
-
+import zyncLogo from './assets/logo.png';
 // Lazy Load Heavy Components for Performance Optimization
 const SystemVisualizer = React.lazy(() => import('./components/SystemVisualizer'));
 const LoginPage = React.lazy(() => import('./components/LoginPage'));
-const VoiceSettings = React.lazy(() => import('./components/VoiceSettings'));
+const SettingsPanel = React.lazy(() => import('./components/SettingsPanel'));
+const MemoryInspector = React.lazy(() => import('./components/MemoryInspector'));
+const ToolCreator = React.lazy(() => import('./components/ToolCreator'));
+const ExperimentLab = React.lazy(() => import('./components/ExperimentLab'));
+const OnboardingTour = React.lazy(() => import('./components/OnboardingTour'));
+const ExecutiveDashboard = React.lazy(() => import('./components/dashboards/ExecutiveDashboard'));
 
 // Dream Overlay Component
 const DreamOverlay = React.memo(() => {
@@ -42,17 +47,7 @@ const DreamOverlay = React.memo(() => {
     <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-fuchsia-900/10 via-transparent to-fuchsia-900/10 mix-blend-overlay animate-pulse-subtle"></div>
       {particles.map((p, i) => (
-        <div 
-          key={i} 
-          className="dream-particle"
-          style={{
-            '--p-left': p.left,
-            '--p-delay': p.animationDelay,
-            '--p-width': p.width,
-            '--p-height': p.height,
-            '--p-opacity': p.opacity
-          } as React.CSSProperties}
-        />
+        <ParticleView key={i} p={p} />
       ))}
     </div>
   );
@@ -79,6 +74,23 @@ const CoreLoader = () => (
   </div>
 );
 
+// Particle Component to avoid inline styles in JSX (Linter fix)
+const ParticleView = ({ p }: { p: any }) => {
+  const ref = React.useRef<HTMLDivElement>(null);
+  
+  React.useLayoutEffect(() => {
+    if (ref.current) {
+      ref.current.style.setProperty('--p-left', p.left);
+      ref.current.style.setProperty('--p-delay', p.animationDelay);
+      ref.current.style.setProperty('--p-width', p.width);
+      ref.current.style.setProperty('--p-height', p.height);
+      ref.current.style.setProperty('--p-opacity', String(p.opacity));
+    }
+  }, [p]);
+
+  return <div ref={ref} className="dream-particle" />;
+};
+
 function App() {
   // Authentication State
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -103,8 +115,36 @@ function App() {
     setMessages(active.messages);
   }, []);
 
+  // Settings & Role State
+  const [appSettings, setAppSettings] = useState(() => getSettings());
+
+  useEffect(() => {
+    const handleSettingsChange = () => {
+        setAppSettings(getSettings());
+    };
+    window.addEventListener('zync-settings-changed', handleSettingsChange);
+    return () => window.removeEventListener('zync-settings-changed', handleSettingsChange);
+  }, []);
+
   const [isSystemGlitching, setIsSystemGlitching] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isMemoryInspectorOpen, setIsMemoryInspectorOpen] = useState(false);
+  const [isToolCreatorOpen, setIsToolCreatorOpen] = useState(false);
+  const [isExperimentLabOpen, setIsExperimentLabOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // --- Initialization & Onboarding Check ---
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem('zync_onboarding_complete');
+    if (!hasSeenOnboarding) {
+        setShowOnboarding(true);
+    }
+  }, []);
+
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('zync_onboarding_complete', 'true');
+    setShowOnboarding(false);
+  };
   const [isDreaming, setIsDreaming] = useState(false);
   const [dreamStatus, setDreamStatus] = useState<string | null>(null);
 
@@ -1238,6 +1278,17 @@ function App() {
       category: 'System'
     },
     {
+      id: 'create-tool',
+      label: 'Create Custom Tool',
+      description: 'Define a new tool for the AI to use.',
+      icon: <Code size={18} />,
+      action: () => {
+        setIsPaletteOpen(false);
+        setIsToolCreatorOpen(true);
+      },
+      category: 'System'
+    },
+    {
       id: 'system-reset',
       label: 'Reboot Core',
       description: 'Force re-initialization of all subsystems.',
@@ -1285,6 +1336,17 @@ function App() {
       icon: <Network size={18} />,
       action: handleTestWorkflow,
       category: 'System'
+    },
+    {
+      id: 'open-experiment-lab',
+      label: 'Experiment Lab',
+      description: 'Test personas and prompts in a controlled environment.',
+      icon: <FlaskConical size={18} />,
+      action: () => {
+        setIsPaletteOpen(false);
+        setIsExperimentLabOpen(true);
+      },
+      category: 'System'
     }
   ], [sessions, currentSession, isOfflineMode, isReflexActive, isMemoryActive, messages.length]);
 
@@ -1311,23 +1373,15 @@ function App() {
       <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-[#050a15] to-slate-900 animate-aurora z-0"></div>
       <DataStreamBackground variant="sidebar" />
       <div className="scanline-overlay"></div>
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(15,23,42,0.5),rgba(2,6,23,0.8)),url('https://grainy-gradients.vercel.app/noise.svg')] opacity-30 pointer-events-none z-0 mix-blend-overlay"></div>
+      {isExperimentLabOpen && <ExperimentLab onClose={() => setIsExperimentLabOpen(false)} />}
       
-      <CommandPalette 
-        isOpen={isPaletteOpen} 
-        onClose={() => setIsPaletteOpen(false)} 
-        commands={commands}
-      />
-
-      {mobileMenuOpen && (
-        <div 
-          className="fixed inset-0 z-[45] bg-black/60 backdrop-blur-sm md:hidden transition-opacity duration-300"
-          onClick={() => setMobileMenuOpen(false)}
-        />
+      {/* Onboarding Tour */}
+      {showOnboarding && (
+        <Suspense fallback={null}>
+            <OnboardingTour onComplete={handleOnboardingComplete} />
+        </Suspense>
       )}
-
-      {isSettingsOpen && <VoiceSettings onClose={() => setIsSettingsOpen(false)} />}
-
+      
       <div className={`
         fixed inset-y-0 left-0 z-50 w-80 bg-slate-950/95 backdrop-blur-2xl border-r border-slate-800/50 transform transition-transform duration-300 ease-in-out shadow-2xl
         md:relative md:translate-x-0 md:w-80 md:bg-slate-950/50 md:backdrop-blur-xl md:shadow-[10px_0_30px_-10px_rgba(0,0,0,0.5)]
@@ -1347,7 +1401,17 @@ function App() {
         </Suspense>
       </div>
 
-      <div className="flex-1 flex flex-col relative z-10 w-full">
+      {/* Main Layout Area */}
+      <div className="flex-1 flex flex-col relative z-10 overflow-hidden">
+        
+        {/* EXECUTIVE DASHBOARD VIEW */}
+        {appSettings.userRole === 'EXECUTIVE' ? (
+            <Suspense fallback={<CoreLoader />}>
+                <ExecutiveDashboard stats={systemStats} />
+            </Suspense>
+        ) : (
+            /* STANDARD CHAT VIEW */
+            <>
         <header className="h-16 md:h-16 border-b border-slate-800/30 bg-slate-950/30 backdrop-blur-md flex items-center justify-between px-4 md:px-8 sticky top-0 z-40 transition-all">
           <div className="flex items-center gap-4">
             <button 
@@ -1376,6 +1440,22 @@ function App() {
              >
                <Settings size={18} />
              </button>
+
+             <button
+                onClick={() => setIsExperimentLabOpen(true)}
+                className="p-2 rounded-lg text-slate-400 hover:text-fuchsia-400 hover:bg-fuchsia-500/10 transition-all"
+                title="Experiment Lab"
+             >
+                <FlaskConical size={18} />
+             </button>
+
+             <button
+                onClick={() => setIsMemoryInspectorOpen(true)}
+                className="p-2 rounded-lg text-slate-400 hover:text-fuchsia-400 hover:bg-fuchsia-500/10 transition-all"
+                title="Memory Inspector"
+              >
+                <Layers size={18} />
+              </button>
 
              <button
                onClick={handleDreamToggle}
@@ -1581,6 +1661,8 @@ function App() {
           </div>
         </div>
 
+      </>
+        )}
       </div>
     </div>
   );

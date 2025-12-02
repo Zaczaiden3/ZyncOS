@@ -79,21 +79,31 @@ export class WorkflowEngine {
   private resolveArgs(template: Record<string, any> | undefined, stepOutputs: Map<string, any>, initialInput: any): any {
     if (!template) return {};
     
-    // Simple template replacement: {{stepId.output}} or {{input.field}}
-    // This is a basic implementation.
     const resolvedArgs: any = {};
     
     for (const [key, value] of Object.entries(template)) {
       if (typeof value === 'string' && value.startsWith('{{') && value.endsWith('}}')) {
         const path = value.slice(2, -2).trim();
-        if (path.startsWith('input')) {
-            // Handle input access, e.g. input.query
-            // For now just return initialInput if path is 'input'
-            resolvedArgs[key] = initialInput; // Simplified
+        const parts = path.split('.');
+        const root = parts[0];
+        
+        let sourceData: any;
+        if (root === 'input') {
+            sourceData = initialInput;
         } else {
-            // Handle step output, e.g. step1.output
-            // For now assume path is just stepId
-            resolvedArgs[key] = stepOutputs.get(path);
+            sourceData = stepOutputs.get(root);
+        }
+
+        if (parts.length > 1) {
+            // Traverse nested properties
+            let current = sourceData;
+            for (let i = 1; i < parts.length; i++) {
+                if (current === undefined || current === null) break;
+                current = current[parts[i]];
+            }
+            resolvedArgs[key] = current;
+        } else {
+            resolvedArgs[key] = sourceData;
         }
       } else {
         resolvedArgs[key] = value;

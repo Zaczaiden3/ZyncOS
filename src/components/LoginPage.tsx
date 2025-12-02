@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Terminal, AlertCircle, Check, ArrowRight, Activity, Fingerprint, Lock, Mail, User, Cpu, Bug, Github, Shield } from 'lucide-react';
 import { loginUser, registerUser } from '../services/auth';
-import zyncLogo from '@/src/assets/logo.png';
+import zyncLogo from '@/assets/logo.png';
 import './LoginPage.css';
 
 interface LoginPageProps {
