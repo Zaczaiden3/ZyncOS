@@ -20,6 +20,7 @@ import { personaSimulator } from './cores/simulation/PersonaSimulator';
 import { sessionManager, ChatSession } from './services/sessionManager';
 import { subscribeToAuthChanges, logoutUser } from './services/auth';
 import { pluginManager } from './services/pluginManager';
+import { SafetyUtils } from './utils/safety';
 import zyncLogo from './assets/logo.png';
 // Lazy Load Heavy Components for Performance Optimization
 const SystemVisualizer = React.lazy(() => import('./components/SystemVisualizer'));
@@ -732,10 +733,13 @@ function App() {
   const processUserMessage = async (userText: string, userImage: string | null, userAttachmentType: 'image' | 'text' | null) => {
     
     // 1. Add User Message
+    // Safety: Mask PII if enabled
+    const safeText = appSettings.enablePIIMasking ? SafetyUtils.maskPII(userText) : userText;
+
     const userMsg: Message = {
       id: Date.now().toString(),
       role: AIRole.USER,
-      text: userText,
+      text: safeText,
       attachment: userImage || undefined,
       attachmentType: userAttachmentType || undefined,
       timestamp: Date.now()

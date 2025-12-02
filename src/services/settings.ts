@@ -6,6 +6,8 @@ export interface AppSettings {
   consensusModel: string;
   theme: 'dark' | 'light' | 'cyber';
   userRole: 'ADMIN' | 'DEVELOPER' | 'EXECUTIVE' | 'USER';
+  enablePIIMasking: boolean;
+  strictSafetyMode: boolean;
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -15,7 +17,9 @@ const DEFAULT_SETTINGS: AppSettings = {
   memoryModel: 'google/gemini-2.0-flash-thinking-exp-01-21',
   consensusModel: 'google/gemini-2.0-flash-001',
   theme: 'dark',
-  userRole: 'DEVELOPER'
+  userRole: 'DEVELOPER',
+  enablePIIMasking: false,
+  strictSafetyMode: false
 };
 
 export const getSettings = (): AppSettings => {

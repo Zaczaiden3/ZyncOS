@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Settings, Key, Cpu, Mic, Monitor, Save, RefreshCw, Play, Square, Trash2 } from 'lucide-react';
+import { X, Settings, Key, Cpu, Mic, Monitor, Save, RefreshCw, Play, Square, Trash2, Shield } from 'lucide-react';
 import { useSpeechContext } from '../contexts/SpeechContext';
 import { useTextToSpeech } from '../hooks/useTextToSpeech';
 import { getSettings, saveSettings, AppSettings } from '../services/settings';
@@ -8,7 +8,7 @@ interface SettingsPanelProps {
   onClose: () => void;
 }
 
-type Tab = 'general' | 'api' | 'models' | 'voice';
+type Tab = 'general' | 'api' | 'models' | 'voice' | 'safety';
 
 const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState<Tab>('general');
@@ -79,6 +79,12 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-mono transition-colors ${activeTab === 'voice' ? 'bg-cyan-500/10 text-cyan-400' : 'text-slate-500 hover:text-slate-300'}`}
             >
                 <Mic size={14} /> VOICE
+            </button>
+            <button 
+                onClick={() => setActiveTab('safety')}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-mono transition-colors ${activeTab === 'safety' ? 'bg-cyan-500/10 text-cyan-400' : 'text-slate-500 hover:text-slate-300'}`}
+            >
+                <Shield size={14} /> SAFETY
             </button>
         </div>
 
@@ -271,6 +277,43 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
                             >
                             {isSpeaking ? <Square size={14} /> : <Play size={14} />}
                             {isSpeaking ? 'Stop Test' : 'Test Audio'}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* SAFETY TAB */}
+                {activeTab === 'safety' && (
+                    <div className="space-y-6">
+                        <div className="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded text-xs text-cyan-300 font-mono mb-4">
+                            Configure system safety protocols and data privacy settings.
+                        </div>
+
+                        <div className="flex items-center justify-between p-3 bg-slate-950 border border-slate-800 rounded-lg">
+                            <div className="space-y-1">
+                                <div className="text-sm font-bold text-slate-200">PII Masking</div>
+                                <div className="text-xs text-slate-500">Automatically redact emails, phone numbers, and IPs from logs.</div>
+                            </div>
+                            <button 
+                                onClick={() => setAppSettings({...appSettings, enablePIIMasking: !appSettings.enablePIIMasking})}
+                                aria-label="Toggle PII Masking"
+                                className={`w-12 h-6 rounded-full transition-colors relative ${appSettings.enablePIIMasking ? 'bg-cyan-600' : 'bg-slate-700'}`}
+                            >
+                                <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${appSettings.enablePIIMasking ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                            </button>
+                        </div>
+
+                        <div className="flex items-center justify-between p-3 bg-slate-950 border border-slate-800 rounded-lg">
+                            <div className="space-y-1">
+                                <div className="text-sm font-bold text-slate-200">Strict Safety Mode</div>
+                                <div className="text-xs text-slate-500">Enforce stricter content filtering and block potentially unsafe tool executions.</div>
+                            </div>
+                            <button 
+                                onClick={() => setAppSettings({...appSettings, strictSafetyMode: !appSettings.strictSafetyMode})}
+                                aria-label="Toggle Strict Safety Mode"
+                                className={`w-12 h-6 rounded-full transition-colors relative ${appSettings.strictSafetyMode ? 'bg-cyan-600' : 'bg-slate-700'}`}
+                            >
+                                <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${appSettings.strictSafetyMode ? 'translate-x-6' : 'translate-x-0'}`}></div>
                             </button>
                         </div>
                     </div>
