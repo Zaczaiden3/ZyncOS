@@ -12,6 +12,7 @@ import MessageItem from './components/MessageItem';
 import CommandPalette, { CommandOption } from './components/CommandPalette';
 import WaveBackground from './components/WaveBackground';
 import VoiceInput from './components/VoiceInput';
+import LiveVoiceInterface from './components/LiveVoiceInterface';
 import MuteToggle from './components/MuteToggle';
 import CoreLoader from './components/CoreLoader';
 import DreamOverlay from './components/DreamOverlay';
@@ -75,6 +76,7 @@ function App() {
 
   const [isSystemGlitching, setIsSystemGlitching] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isLiveMode, setIsLiveMode] = useState(false);
   const [isMemoryInspectorOpen, setIsMemoryInspectorOpen] = useState(false);
   const [isToolCreatorOpen, setIsToolCreatorOpen] = useState(false);
   const [isExperimentLabOpen, setIsExperimentLabOpen] = useState(false);
@@ -1604,6 +1606,7 @@ function App() {
                         onTranscript={handleVoiceTranscript} 
                         onStateChange={setIsListening}
                         disabled={isReflexActive || isMemoryActive}
+                        onStartLiveMode={() => setIsLiveMode(true)}
                     />
                 </div>
 
@@ -1647,6 +1650,11 @@ function App() {
 
       </>
         )}
+      
+      {/* Live Voice Interface Overlay */}
+      {isLiveMode && (
+        <LiveVoiceInterface onClose={() => setIsLiveMode(false)} />
+      )}
       </div>
     </div>
   );

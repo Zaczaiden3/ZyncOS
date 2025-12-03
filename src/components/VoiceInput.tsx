@@ -16,7 +16,7 @@ declare global {
   }
 }
 
-const VoiceInput: React.FC<VoiceInputProps> = ({ onTranscript, onStateChange, disabled }) => {
+const VoiceInput: React.FC<VoiceInputProps> = ({ onTranscript, onStateChange, disabled, onStartLiveMode }) => {
   const [isListening, setIsListening] = useState(false);
   const [interimText, setInterimText] = useState('');
   const [error, setError] = useState<string | null>(null);
