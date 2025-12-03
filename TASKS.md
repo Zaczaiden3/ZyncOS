@@ -149,3 +149,4 @@
 
 - [x] **Code Quality**
   - [x] Resolve linting issues (inline styles in `WaveBackground.tsx`).
+  - [x] Replace static logo with vector `ZyncLogo` component.
