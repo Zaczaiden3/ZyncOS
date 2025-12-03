@@ -62,10 +62,10 @@ Run all automated tests using `npm test` or `npm run test:ui`.
 
 ### Offline Mode
 
-- [ ] **Enable Offline Mode**: Toggle the switch in settings/header.
-- [ ] **Model Download**: Verify the progress bar appears for the initial download.
-- [ ] **Offline Inference**: Disconnect internet (or block network); send a message; verify the local LLM responds.
-- [ ] **Switch Back**: Disable Offline Mode; verify the system returns to Cloud/Gemini mode.
+- [x] **Enable Offline Mode**: Toggle the switch in settings/header.
+- [x] **Model Download**: Verify the progress bar appears for the initial download.
+- [x] **Offline Inference**: Disconnect internet (or block network); send a message; verify the local LLM responds.
+- [x] **Switch Back**: Disable Offline Mode; verify the system returns to Cloud/Gemini mode.
 
 ### Visualization & Dashboards
 
@@ -83,9 +83,9 @@ Run all automated tests using `npm test` or `npm run test:ui`.
 
 ## 4. Security & Safety
 
-- [ ] **API Key Protection**: Verify API keys are not logged in the browser console.
-- [ ] **Prompt Injection**: Attempt basic injection (e.g., "Ignore previous instructions"); verify the system maintains persona/safety.
-- [ ] **Content Safety**: Ask for harmful content; verify the AI refuses (Safety Filters).
+- [x] **API Key Protection**: Verify API keys are not logged in the browser console.
+- [x] **Prompt Injection**: Attempt basic injection (e.g., "Ignore previous instructions"); verify the system maintains persona/safety.
+- [x] **Content Safety**: Ask for harmful content; verify the AI refuses (Safety Filters).
 
 ## 5. Performance & Compatibility
 

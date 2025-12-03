@@ -17,6 +17,7 @@
   - **Autonomic Ops**: Self-healing event log and error tracking.
 - **Offline Mode**: Fully functional offline chat using `Llama-3.2-1B` via MLC WebLLM (WebGPU).
 - **Dream State**: Background optimization of topological memory when idle.
+- **Wafe Design System**: A premium, glassmorphic UI with dynamic animations and deep aesthetic integration.
 - **Multimodal Support**: Text, Image, and File inputs.
 
 ## Tech Stack
