@@ -97,12 +97,12 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
           <div 
             ref={bubbleRef}
             className={`
-            p-3 md:p-4 rounded-xl text-sm shadow-md backdrop-blur-sm border w-full
-            ${isUser ? 'bg-slate-800/80 text-slate-100 border-slate-700 rounded-tr-none' : ''}
-            ${isReflex ? 'bg-cyan-950/20 text-cyan-50 border-cyan-500/20 rounded-tl-none' : ''}
-            ${isMemory ? 'bg-fuchsia-950/20 text-fuchsia-50 border-fuchsia-500/20 rounded-tl-none' : ''}
-            ${isNeuro ? 'bg-emerald-950/20 text-emerald-50 border-emerald-500/20 rounded-tl-none' : ''}
-            ${isConsensus ? 'bg-amber-950/20 text-amber-50 border-amber-500/20 rounded-tl-none' : ''}
+            p-3 md:p-4 rounded-2xl text-sm shadow-lg backdrop-blur-md border w-full transition-all duration-300 hover:scale-[1.005]
+            ${isUser ? 'bg-white/5 text-slate-100 border-white/10 rounded-tr-md' : ''}
+            ${isReflex ? 'bg-gradient-to-br from-cyan-500/10 to-blue-600/10 text-cyan-50 border-cyan-500/20 rounded-tl-md' : ''}
+            ${isMemory ? 'bg-gradient-to-br from-fuchsia-500/10 to-pink-600/10 text-fuchsia-50 border-fuchsia-500/20 rounded-tl-md' : ''}
+            ${isNeuro ? 'bg-gradient-to-br from-emerald-500/10 to-teal-600/10 text-emerald-50 border-emerald-500/20 rounded-tl-md' : ''}
+            ${isConsensus ? 'bg-gradient-to-br from-orange-500/10 to-amber-600/10 text-amber-50 border-orange-500/20 rounded-tl-md' : ''}
             message-bubble group relative
           `}>
             {/* Copy Button */}

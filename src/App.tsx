@@ -9,7 +9,7 @@ import { workflowEngine } from './services/workflowEngine';
 import './services/tools'; // Register default tools
 import MessageItem from './components/MessageItem';
 import CommandPalette, { CommandOption } from './components/CommandPalette';
-import DataStreamBackground from './components/DataStreamBackground';
+import WaveBackground from './components/WaveBackground';
 import VoiceInput from './components/VoiceInput';
 
 import { memoryStore } from './services/vectorDb';
@@ -21,7 +21,7 @@ import { sessionManager, ChatSession } from './services/sessionManager';
 import { subscribeToAuthChanges, logoutUser } from './services/auth';
 import { pluginManager } from './services/pluginManager';
 import { SafetyUtils } from './utils/safety';
-import zyncLogo from './assets/logo.png';
+import ZyncLogo from './components/ZyncLogo';
 // Lazy Load Heavy Components for Performance Optimization
 const SystemVisualizer = React.lazy(() => import('./components/SystemVisualizer'));
 const LoginPage = React.lazy(() => import('./components/LoginPage'));
@@ -1364,8 +1364,8 @@ function App() {
     return (
       <Suspense fallback={<CoreLoader />}>
         <div className="min-h-screen bg-slate-950 text-slate-100 font-sans relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-[#050a15] to-slate-900 animate-aurora z-0"></div>
-            <DataStreamBackground variant="centered" isGlitching={isSystemGlitching} />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#0f0720] via-[#1a0b2e] to-[#0f0720] animate-aurora z-0"></div>
+            <WaveBackground isActive={false} />
             <div className="absolute inset-0 bg-[linear-gradient(rgba(15,23,42,0.5),rgba(2,6,23,0.8)),url('https://grainy-gradients.vercel.app/noise.svg')] opacity-30 pointer-events-none z-0 mix-blend-overlay"></div>
             <div className="scanline-overlay"></div>
             
@@ -1381,8 +1381,8 @@ function App() {
   return (
     <div className={`flex h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden relative selection:bg-cyan-500/30 selection:text-cyan-50 transition-all duration-1000 ${isDreaming ? 'dream-active' : ''} ${isOfflineMode ? 'offline-active' : ''}`}>
       {isDreaming && <DreamOverlay />}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-[#050a15] to-slate-900 animate-aurora z-0"></div>
-      <DataStreamBackground variant="sidebar" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0f0720] via-[#1a0b2e] to-[#0f0720] animate-aurora z-0"></div>
+      <WaveBackground isActive={isReflexActive || isMemoryActive} />
       <div className="scanline-overlay"></div>
       {isExperimentLabOpen && <ExperimentLab onClose={() => setIsExperimentLabOpen(false)} />}
       
@@ -1394,8 +1394,8 @@ function App() {
       )}
       
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-80 bg-slate-950/95 backdrop-blur-2xl border-r border-slate-800/50 transform transition-transform duration-300 ease-in-out shadow-2xl
-        md:relative md:translate-x-0 md:w-80 md:bg-slate-950/50 md:backdrop-blur-xl md:shadow-[10px_0_30px_-10px_rgba(0,0,0,0.5)]
+        fixed inset-y-0 left-0 z-50 w-80 glass-panel transform transition-transform duration-300 ease-in-out m-0 md:m-4 md:rounded-2xl
+        md:relative md:translate-x-0 md:w-80 md:h-[calc(100vh-2rem)]
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <Suspense fallback={<CoreLoader />}>
@@ -1423,7 +1423,7 @@ function App() {
         ) : (
             /* STANDARD CHAT VIEW */
             <>
-        <header className="h-16 md:h-16 border-b border-slate-800/30 bg-slate-950/30 backdrop-blur-md flex items-center justify-between px-4 md:px-8 sticky top-0 z-40 transition-all">
+        <header className="h-16 md:h-16 bg-slate-950/30 backdrop-blur-md flex items-center justify-between px-4 md:px-8 sticky top-0 z-40 transition-all gradient-border-bottom">
           <div className="flex items-center gap-4">
             <button 
                 onClick={() => setMobileMenuOpen(true)}
@@ -1438,7 +1438,7 @@ function App() {
                 <div className={`w-3 h-3 rounded-full shadow-inner relative z-10 transition-colors duration-300 ${isMemoryActive ? 'bg-fuchsia-400' : isReflexActive ? 'bg-cyan-400' : 'bg-cyan-600'}`}></div>
              </div>
             <div>
-              <img src={zyncLogo} alt="ZyncAI" className="h-8 md:h-10 w-auto object-contain" />
+              <ZyncLogo className="h-8 md:h-10 w-auto logo-glow" />
             </div>
           </div>
           
@@ -1551,9 +1551,10 @@ function App() {
 
         <div className="p-4 md:p-8 z-40 relative">
           <div className="max-w-4xl mx-auto relative">
-            <div className={`absolute inset-0 bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-700/50 shadow-2xl -z-10 transition-all duration-700 ${!isReflexActive && !isMemoryActive && !isListening ? 'animate-breathing-glow' : ''}`}></div>
+            {/* Input Island Container */}
+            <div className={`input-island rounded-2xl p-2 ${!isReflexActive && !isMemoryActive && !isListening ? 'animate-breathing-glow' : ''}`}>
             
-            <form onSubmit={handleSendMessage} className="relative group p-2">
+            <form onSubmit={handleSendMessage} className="relative group">
                 
                 {selectedImage && (
                   <div className="absolute bottom-full left-2 mb-2 p-2 bg-slate-900/90 border border-slate-700 rounded-lg backdrop-blur-md flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
@@ -1656,8 +1657,7 @@ function App() {
                 <Send size={18} />
               </button>
             </form>
-            
-            <div className="absolute -bottom-px left-6 right-6 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-500"></div>
+            </div>
           </div>
           
           <div className="mt-2 md:mt-3 flex justify-center gap-4 md:gap-8 text-[9px] md:text-[10px] text-slate-500 font-mono uppercase tracking-widest opacity-70">

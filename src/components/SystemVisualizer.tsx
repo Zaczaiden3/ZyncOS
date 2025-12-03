@@ -186,14 +186,14 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
         
         {/* Header */}
         <div className="flex items-center justify-between mb-6 shrink-0">
-          <h2 className="text-xs font-mono font-bold text-cyan-400 tracking-[0.2em] uppercase flex items-center gap-2">
+          <h2 className="text-xs font-medium text-cyan-300 tracking-widest uppercase flex items-center gap-2">
              <Activity size={14} />
-             Telemetry
+             System Status
           </h2>
           <div className="flex items-center gap-3">
-              <div className="text-[10px] text-slate-500 font-mono hidden md:block">V.2.6.0_CHIMERA</div>
+              <div className="text-[10px] text-slate-400 font-mono hidden md:block opacity-60">v2.6.0</div>
               {onClose && (
-                  <button onClick={onClose} aria-label="Close telemetry panel" className="md:hidden p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+                  <button onClick={onClose} aria-label="Close telemetry panel" className="md:hidden p-1 rounded hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
                       <X size={18} />
                   </button>
               )}
@@ -222,18 +222,18 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
 
           {/* Network & Quota Status */}
           <div className="grid grid-cols-2 gap-3">
-              <div className="bg-slate-900/40 p-2 rounded border border-slate-800 flex flex-col gap-1">
-                  <span className="text-[9px] text-slate-500 font-mono uppercase">Net Latency</span>
+              <div className="bg-white/5 p-3 rounded-xl border border-white/5 flex flex-col gap-1 backdrop-blur-sm">
+                  <span className="text-[9px] text-slate-400 uppercase tracking-wider">Net Latency</span>
                   <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                      <span className="text-xs font-mono text-slate-300">24ms</span>
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                      <span className="text-xs text-slate-200">24ms</span>
                   </div>
               </div>
-              <div className="bg-slate-900/40 p-2 rounded border border-slate-800 flex flex-col gap-1">
-                  <span className="text-[9px] text-slate-500 font-mono uppercase">API Quota</span>
+              <div className="bg-white/5 p-3 rounded-xl border border-white/5 flex flex-col gap-1 backdrop-blur-sm">
+                  <span className="text-[9px] text-slate-400 uppercase tracking-wider">API Quota</span>
                   <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-500"></div>
-                      <span className="text-xs font-mono text-slate-300">84%</span>
+                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-400"></div>
+                      <span className="text-xs text-slate-200">84%</span>
                   </div>
               </div>
           </div>
@@ -242,45 +242,33 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Reflex Card */}
               <div className={`
-                  relative p-4 rounded-xl border backdrop-blur-md transition-all duration-500 overflow-hidden group cursor-default
-                  ${isReflexActive ? 'border-cyan-500/50 bg-cyan-950/20 shadow-[0_0_20px_-5px_rgba(6,182,212,0.3)]' : 'border-slate-800/50 bg-slate-900/20 hover:border-slate-700'}
+                  relative p-4 rounded-2xl border backdrop-blur-md transition-all duration-500 overflow-hidden group cursor-default
+                  ${isReflexActive ? 'border-cyan-500/30 bg-cyan-500/10 shadow-lg shadow-cyan-500/10' : 'border-white/5 bg-white/5 hover:border-white/10'}
               `} title={`Model: ${activeModels?.reflex.name || 'Unknown'}`}>
-              <div className={`
-                  absolute -right-4 -top-4 w-24 h-24 bg-cyan-500/20 rounded-full blur-2xl 
-                  transition-all duration-700 
-                  ${isReflexActive ? 'opacity-100 animate-pulse' : 'opacity-40 animate-breathing-slow'}
-                  group-hover:opacity-80 group-hover:scale-110 group-hover:blur-3xl
-              `}></div>
               
               <div className="flex justify-between items-start mb-4 relative z-10">
-                  <Zap className={`w-5 h-5 transition-colors duration-300 ${isReflexActive ? 'text-cyan-400' : 'text-slate-600 group-hover:text-cyan-400/70'}`} />
-                  <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isReflexActive ? 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]' : 'bg-slate-800 group-hover:bg-cyan-900 animate-breathing-slow'}`}></div>
+                  <Zap className={`w-5 h-5 transition-colors duration-300 ${isReflexActive ? 'text-cyan-300' : 'text-slate-500 group-hover:text-cyan-300/70'}`} />
+                  <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isReflexActive ? 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]' : 'bg-slate-700 group-hover:bg-cyan-900'}`}></div>
               </div>
-              <div className="text-[10px] font-mono text-slate-500 mb-1">REFLEX_CORE</div>
-              <div className={`text-sm font-bold tracking-wider transition-colors duration-300 ${isReflexActive ? 'text-cyan-100' : 'text-slate-400 group-hover:text-slate-300'}`}>
-                  {isReflexActive ? 'PROCESSING' : 'STANDBY'}
+              <div className="text-[10px] text-slate-400 mb-1 tracking-wider uppercase">Reflex Core</div>
+              <div className={`text-sm font-medium tracking-wide transition-colors duration-300 ${isReflexActive ? 'text-cyan-100' : 'text-slate-400 group-hover:text-slate-300'}`}>
+                  {isReflexActive ? 'Processing' : 'Standby'}
               </div>
               </div>
 
               {/* Memory Card */}
               <div className={`
-                  relative p-4 rounded-xl border backdrop-blur-md transition-all duration-500 overflow-hidden group cursor-default
-                  ${isMemoryActive || isDreaming ? 'border-fuchsia-500/50 bg-fuchsia-950/20 shadow-[0_0_20px_-5px_rgba(217,70,239,0.3)]' : 'border-slate-800/50 bg-slate-900/20 hover:border-slate-700'}
+                  relative p-4 rounded-2xl border backdrop-blur-md transition-all duration-500 overflow-hidden group cursor-default
+                  ${isMemoryActive || isDreaming ? 'border-fuchsia-500/30 bg-fuchsia-500/10 shadow-lg shadow-fuchsia-500/10' : 'border-white/5 bg-white/5 hover:border-white/10'}
               `} title={`Model: ${activeModels?.memory.name || 'Unknown'}`}>
-              <div className={`
-                  absolute -right-4 -top-4 w-24 h-24 bg-fuchsia-500/20 rounded-full blur-2xl 
-                  transition-all duration-700
-                  ${(isMemoryActive || isDreaming) ? 'opacity-100 animate-pulse' : 'opacity-40 animate-breathing-slow'}
-                  group-hover:opacity-80 group-hover:scale-110 group-hover:blur-3xl
-              `}></div>
 
               <div className="flex justify-between items-start mb-4 relative z-10">
-                  <Database className={`w-5 h-5 transition-colors duration-300 ${isMemoryActive || isDreaming ? 'text-fuchsia-400' : 'text-slate-600 group-hover:text-fuchsia-400/70'}`} />
-                  <div className={`w-2 h-2 rounded-full transition-colors duration-300 ${isMemoryActive || isDreaming ? 'bg-fuchsia-400 shadow-[0_0_8px_rgba(232,121,249,0.8)]' : 'bg-slate-800 group-hover:bg-fuchsia-900 animate-breathing-slow'}`}></div>
+                  <Database className={`w-5 h-5 transition-colors duration-300 ${isMemoryActive || isDreaming ? 'text-fuchsia-300' : 'text-slate-500 group-hover:text-fuchsia-300/70'}`} />
+                  <div className={`w-2 h-2 rounded-full transition-colors duration-300 ${isMemoryActive || isDreaming ? 'bg-fuchsia-400 shadow-[0_0_8px_rgba(232,121,249,0.8)]' : 'bg-slate-700 group-hover:bg-fuchsia-900'}`}></div>
               </div>
-              <div className="text-[10px] font-mono text-slate-500 mb-1">MEMORY_CORE</div>
-              <div className={`text-sm font-bold tracking-wider transition-colors duration-300 ${isMemoryActive || isDreaming ? 'text-fuchsia-100' : 'text-slate-400 group-hover:text-slate-300'}`}>
-                  {isMemoryActive ? 'ANALYZING' : (isDreaming ? 'DREAMING' : 'SYNCED')}
+              <div className="text-[10px] text-slate-400 mb-1 tracking-wider uppercase">Memory Core</div>
+              <div className={`text-sm font-medium tracking-wide transition-colors duration-300 ${isMemoryActive || isDreaming ? 'text-fuchsia-100' : 'text-slate-400 group-hover:text-slate-300'}`}>
+                  {isMemoryActive ? 'Analyzing' : (isDreaming ? 'Dreaming' : 'Synced')}
               </div>
               </div>
           </div>
@@ -321,7 +309,7 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
               </h3>
               <div className="space-y-3">
               {/* Reflex Bar */}
-              <div className="bg-slate-900/30 p-4 rounded-lg border border-slate-800 hover:border-cyan-500/30 transition-colors duration-300">
+              <div className="bg-white/5 p-4 rounded-lg border border-white/5 hover:border-cyan-500/30 transition-colors duration-300">
                   <div className="flex justify-between items-end mb-2">
                       <span className="text-[10px] text-cyan-400 font-mono font-bold">REFLEX</span>
                       <div className="text-right">
@@ -334,7 +322,7 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
                   </div>
               </div>
               {/* Memory Bar */}
-              <div className="bg-slate-900/30 p-4 rounded-lg border border-slate-800 hover:border-fuchsia-500/30 transition-colors duration-300">
+              <div className="bg-white/5 p-4 rounded-lg border border-white/5 hover:border-fuchsia-500/30 transition-colors duration-300">
                   <div className="flex justify-between items-end mb-2">
                       <span className="text-[10px] text-fuchsia-400 font-mono font-bold">MEMORY</span>
                       <div className="text-right">
@@ -354,7 +342,7 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
               <h3 className="text-[10px] font-mono text-slate-500 mb-3 flex items-center gap-2 uppercase tracking-wider">
               <Network size={12} /> Node Topology
               </h3>
-              <div className="flex-1 bg-slate-900/30 rounded-xl border border-slate-800/50 p-4 relative overflow-hidden flex items-end">
+              <div className="flex-1 bg-white/5 rounded-xl border border-white/5 p-4 relative overflow-hidden flex items-end">
                   <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
                   
                   <div className="relative z-10 w-full h-full flex items-end justify-between gap-1">
@@ -371,7 +359,7 @@ const SystemVisualizer: React.FC<SystemVisualizerProps> = ({
                 <h3 className="text-[10px] font-mono text-slate-500 mb-3 flex items-center gap-2 uppercase tracking-wider">
                 <BarChart3 size={12} /> Heuristics (Conf)
                 </h3>
-                <div className="bg-slate-900/30 rounded-lg border border-slate-800 p-4 space-y-4 relative">
+                <div className="bg-white/5 rounded-lg border border-white/5 p-4 space-y-4 relative">
                     {/* Legend/Tooltip for Threshold */}
                     <div className="absolute top-2 right-2 text-[8px] text-slate-600 font-mono flex items-center gap-1">
                         <div className="w-0.5 h-2 bg-red-500/50"></div>
@@ -517,7 +505,7 @@ const WorkflowTrace = ({ logs }: { logs: WorkflowExecutionLog[] }) => {
   }, [logs]);
 
   return (
-    <div ref={scrollRef} className="bg-slate-950/50 rounded-lg border border-slate-800/50 p-3 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent font-mono text-[10px] space-y-2 shadow-inner">
+    <div ref={scrollRef} className="bg-black/20 rounded-lg border border-white/5 p-3 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent font-mono text-[10px] space-y-2 shadow-inner">
       {logs.length === 0 ? (
         <div className="text-slate-600 italic text-center py-4">Waiting for workflow execution...</div>
       ) : (
@@ -585,7 +573,7 @@ const OpsTimeline = () => {
     }, []);
 
     return (
-        <div className="bg-slate-900/30 rounded-lg border border-slate-800 p-2 h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent font-mono text-[9px]">
+        <div className="bg-black/20 rounded-lg border border-white/5 p-2 h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent font-mono text-[9px]">
             {events.length === 0 ? (
                 <div className="text-slate-600 italic text-center mt-4">No operational events recorded.</div>
             ) : (

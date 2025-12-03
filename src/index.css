@@ -1,10 +1,10 @@
 /* Global styles - Tailwind is loaded via CDN in index.html */
 
 :root {
-  --color-primary: #06b6d4; /* Cyan-500 */
-  --color-secondary: #10b981; /* Emerald-500 */
-  --color-accent: #d946ef; /* Fuchsia-500 */
-  --bg-dark: #020617; /* Slate-950 */
+  --color-primary: #d946ef; /* Pink/Fuchsia as primary */
+  --color-secondary: #06b6d4; /* Cyan */
+  --color-accent: #f97316; /* Orange */
+  --bg-dark: #0f0720; /* Deep Purple/Blue Background */
 }
 
 /* Custom Scrollbar */
@@ -14,11 +14,11 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(2, 6, 23, 0.5);
+  background: rgba(15, 7, 32, 0.5);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(30, 41, 59, 0.8);
+  background: rgba(217, 70, 239, 0.3);
   border-radius: 3px;
   transition: background 0.2s;
 }
@@ -29,7 +29,7 @@
 
 /* Text Selection */
 ::selection {
-  background: rgba(6, 182, 212, 0.3);
+  background: rgba(217, 70, 239, 0.3);
   color: #fff;
 }
 
@@ -38,9 +38,10 @@ body {
   background-color: var(--bg-dark);
   color: #e2e8f0;
   overflow-x: hidden;
+  background-image: radial-gradient(circle at 50% 0%, #2a1b4a 0%, var(--bg-dark) 60%);
 }
 
-/* Subtle Scanline Overlay */
+/* Subtle Scanline Overlay - Reduced opacity for cleaner look */
 .scanline-overlay {
   position: fixed;
   top: 0;
@@ -57,16 +58,16 @@ body {
   background-size: 100% 4px;
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.15;
+  opacity: 0.05;
 }
 
-/* Glassmorphism Utilities */
+/* Glassmorphism Utilities - Updated for Wafe Theme */
 .glass-panel {
-  background: rgba(15, 23, 42, 0.6);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background: rgba(20, 10, 40, 0.6);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
 .glass-panel-hover:hover {
@@ -74,96 +75,43 @@ body {
   border-color: rgba(6, 182, 212, 0.2);
 }
 
-/* Interactive Hover Effect */
-.interactive-hover {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+/* Input Island Styling */
+.input-island {
+  background: rgba(20, 10, 40, 0.6);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 10px 30px -10px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(6, 182, 212, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.interactive-hover:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 15px -3px rgba(6, 182, 212, 0.25);
+.input-island:focus-within {
+  border-color: rgba(6, 182, 212, 0.4);
+  box-shadow: 
+    0 15px 40px -10px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(6, 182, 212, 0.3),
+    0 0 20px -5px rgba(6, 182, 212, 0.15);
+  transform: translateY(-2px);
 }
 
-/* Neon Glow Utilities */
-.glow-text-cyan {
-  text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+/* Animated Gradient Border */
+.gradient-border-bottom {
+  position: relative;
 }
 
-.glow-text-emerald {
-  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
-}
-
-.glow-border-cyan {
-  box-shadow: 0 0 10px -2px rgba(6, 182, 212, 0.3);
-}
-
-/* Animation Utilities */
-@keyframes pulse-subtle {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 3s ease-in-out infinite;
-}
-
-/* Dream State & Offline Mode Effects */
-@keyframes dream-pulse {
-  0%, 100% { box-shadow: inset 0 0 50px rgba(217, 70, 239, 0.1); }
-  50% { box-shadow: inset 0 0 150px rgba(217, 70, 239, 0.25); }
-}
-
-.dream-active {
-  animation: dream-pulse 6s ease-in-out infinite;
-}
-
-.offline-active {
-  border: 1px solid rgba(245, 158, 11, 0.3); /* Amber-500 */
-  box-shadow: inset 0 0 30px rgba(245, 158, 11, 0.1);
-}
-
-/* Floating Particles for Dream Mode */
-.dream-particle {
+.gradient-border-bottom::after {
+  content: '';
   position: absolute;
-  background: rgba(217, 70, 239, 0.4);
-  border-radius: 50%;
-  pointer-events: none;
-  animation: float-up 10s linear infinite;
-  left: var(--p-left);
-  animation-delay: var(--p-delay);
-  width: var(--p-width);
-  height: var(--p-height);
-  opacity: var(--p-opacity);
-}
-
-@keyframes float-up {
-  0% { transform: translateY(100vh) scale(0); opacity: 0; }
-  20% { opacity: 0.6; }
-  80% { opacity: 0.6; }
-  100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
-}
-
-html {
-  scroll-behavior: smooth;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Hide scrollbar for clean UI in some containers but allow scroll */
-.scrollbar-none {
-  -ms-overflow-style: none; /* IE and Edge */
-}
-
-@supports (scrollbar-width: none) {
-  .scrollbar-none {
-    scrollbar-width: none; /* Firefox */
-  }
-}
-
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
-}
-
-/* Utility for warp perspective */
-.perspective-1000 {
-  perspective: 1000px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(6, 182, 212, 0.5) 50%, 
+    transparent 100%
+  );
+  opacity: 0.5;
 }
