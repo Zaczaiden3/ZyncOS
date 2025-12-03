@@ -66,8 +66,8 @@ This document outlines the structured review of the ZyncAi application system, c
 
 **Current Status:**
 
-- **Policy:** `SECURITY.md` exists but is a **template**.
-- **API Keys:** History of API key leaks. Need to ensure keys are strictly environment-variable managed (`.env`).
+- **Policy:** `SECURITY.md` exists and contains specific policies (PII, API Keys, Auth).
+- **API Keys:** Managed via `.env`. Added `.env` to `.gitignore` to prevent leaks.
 - **Input Validation:**
   - `auth.ts`: Relies on Firebase Auth for validation. Client-side validation exists in `LoginPage.tsx`.
   - `gemini.ts`: User input is embedded in prompts. Potential risk of Prompt Injection via conversation history (Context Stuffing). Recommended to switch to structured `history` arrays for Gemini API.
@@ -101,3 +101,5 @@ This document outlines the structured review of the ZyncAi application system, c
 - **Security:** Refactored `gemini.ts` to use structured history; verified PII masking.
 - **UI/UX:** Implemented "Wafe" design language (Glassmorphism, Animations).
 - **Offline Mode:** Verified local LLM functionality.
+- **Refactoring:** Extracted inline components from `App.tsx` (`MuteToggle`, `CoreLoader`, `DreamOverlay`) to improve maintainability.
+- **Cleanup:** Removed debug code (`handleTestMemoryPuzzle`) from production build.

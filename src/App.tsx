@@ -11,6 +11,9 @@ import MessageItem from './components/MessageItem';
 import CommandPalette, { CommandOption } from './components/CommandPalette';
 import WaveBackground from './components/WaveBackground';
 import VoiceInput from './components/VoiceInput';
+import MuteToggle from './components/MuteToggle';
+import CoreLoader from './components/CoreLoader';
+import DreamOverlay from './components/DreamOverlay';
 
 import { memoryStore } from './services/vectorDb';
 import { neuroSymbolicCore } from './cores/neuro-symbolic/NeuroSymbolicCore';
@@ -32,65 +35,7 @@ const ExperimentLab = React.lazy(() => import('./components/ExperimentLab'));
 const OnboardingTour = React.lazy(() => import('./components/OnboardingTour'));
 const ExecutiveDashboard = React.lazy(() => import('./components/dashboards/ExecutiveDashboard'));
 
-// Dream Overlay Component
-const DreamOverlay = React.memo(() => {
-  const particles = React.useMemo(() => {
-    return [...Array(20)].map((_, i) => ({
-      left: `${Math.random() * 100}%`,
-      animationDelay: `${Math.random() * 8}s`,
-      width: `${Math.random() * 3 + 1}px`,
-      height: `${Math.random() * 3 + 1}px`,
-      opacity: Math.random() * 0.5 + 0.2
-    }));
-  }, []);
 
-  return (
-    <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-fuchsia-900/10 via-transparent to-fuchsia-900/10 mix-blend-overlay animate-pulse-subtle"></div>
-      {particles.map((p, i) => (
-        <ParticleView key={i} p={p} />
-      ))}
-    </div>
-  );
-});
-
-// Mute Toggle Component
-const MuteToggle = () => {
-  const { isMuted, toggleMute } = useSpeechContext();
-  return (
-    <button
-      onClick={toggleMute}
-      className={`p-2 rounded-lg transition-all duration-300 ${isMuted ? 'text-slate-500 hover:text-slate-300' : 'text-cyan-400 hover:text-cyan-300 bg-cyan-500/10'}`}
-      title={isMuted ? "Unmute Audio" : "Mute Audio"}
-    >
-      {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-    </button>
-  );
-};
-
-// Loading Fallback Component
-const CoreLoader = () => (
-  <div className="flex items-center justify-center h-full w-full text-cyan-500 font-mono text-xs animate-pulse">
-    [INITIALIZING_MODULE...]
-  </div>
-);
-
-// Particle Component to avoid inline styles in JSX (Linter fix)
-const ParticleView = ({ p }: { p: any }) => {
-  const ref = React.useRef<HTMLDivElement>(null);
-  
-  React.useLayoutEffect(() => {
-    if (ref.current) {
-      ref.current.style.setProperty('--p-left', p.left);
-      ref.current.style.setProperty('--p-delay', p.animationDelay);
-      ref.current.style.setProperty('--p-width', p.width);
-      ref.current.style.setProperty('--p-height', p.height);
-      ref.current.style.setProperty('--p-opacity', String(p.opacity));
-    }
-  }, [p]);
-
-  return <div ref={ref} className="dream-particle" />;
-};
 
 function App() {
   // Authentication State
@@ -1103,12 +1048,7 @@ function App() {
     }
   }, [appSettings, isOfflineMode, messages]);
 
-  const handleTestMemoryPuzzle = () => {
-      setIsPaletteOpen(false);
-      setMobileMenuOpen(false);
-      const puzzle = "System Test: Execute Ghost Branching Simulation on the 'Ship of Theseus' paradox applied to AI identity continuity during model updates.";
-      processUserMessage(puzzle, null, null);
-  };
+
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1330,15 +1270,7 @@ function App() {
       action: handleLogout,
       category: 'System'
     },
-    {
-      id: 'test-memory-puzzle',
-      label: 'Test Memory: Logic Puzzle',
-      description: 'Run a complex logic puzzle to test Ghost Branching',
-      icon: <Activity size={18} />,
-      action: handleTestMemoryPuzzle,
-      disabled: isReflexActive || isMemoryActive,
-      category: 'AI Tools'
-    },
+
     {
       id: 'test-workflow',
       label: 'Test Workflow Engine',
