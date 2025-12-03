@@ -172,6 +172,7 @@
   - [x] Wrap event handlers in `useCallback` in `App.tsx`.
   - [x] Verify build and lint status after optimizations.
   - [x] **Voice I/O Enhancement**: Added auto-read responses, voice input cancellation, and improved voice settings.
+  - [x] **Real-time Voice Streaming**: Implemented Voice In + Voice Out using Gemini Multimodal Live API.
 
 - [ ] **Final Polish**
   - [ ] Conduct final end-to-end manual testing.
