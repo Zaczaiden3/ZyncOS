@@ -1075,6 +1075,12 @@ function App() {
       setIsReflexActive(false);
       setIsMemoryActive(false);
       setSystemStats(prev => ({ ...prev, currentTask: 'PROTOCOL_FAILURE_RECOVERY' }));
+      
+      setMessages(prev => prev.map(msg => 
+        (msg.role === AIRole.REFLEX && (msg.text === '' || msg.text === 'INITIALIZING_STREAM...'))
+        ? { ...msg, text: '**[SYSTEM FAILURE]**: Core crashed. Handing over to Consensus Protocol.' }
+        : msg
+      ));
 
       const consensusMsgId = (Date.now() + 3).toString();
       setMessages(prev => [...prev, {

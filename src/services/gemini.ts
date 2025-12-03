@@ -371,7 +371,7 @@ export async function* generateReflexResponseStream(
         continue; 
       }
 
-      const chunkText = chunk.text || '';
+      const chunkText = chunk.text || part?.text || '';
       accumulatedText += chunkText;
 
       if (chunk.usageMetadata) {
@@ -439,7 +439,9 @@ export async function* generateReflexResponseStream(
         });
 
         for await (const chunk of result2) {
-           const chunkText = chunk.text || '';
+           const candidate = chunk.candidates?.[0];
+           const part = candidate?.content?.parts?.[0];
+           const chunkText = chunk.text || part?.text || '';
            accumulatedText += chunkText;
            if (chunk.usageMetadata) totalTokens += chunk.usageMetadata.totalTokenCount ?? 0;
            
@@ -623,7 +625,9 @@ export async function* generateMemoryAnalysisStream(
     const separator = "|||FACTS|||";
 
     for await (const chunk of result) {
-      const chunkText = chunk.text || '';
+      const candidate = chunk.candidates?.[0];
+      const part = candidate?.content?.parts?.[0];
+      const chunkText = chunk.text || part?.text || '';
       accumulatedText += chunkText;
 
       if (chunk.usageMetadata) {
@@ -747,7 +751,9 @@ export async function* generateConsensusRecoveryStream(
     let totalTokens = 0;
 
     for await (const chunk of result) {
-      const chunkText = chunk.text || '';
+      const candidate = chunk.candidates?.[0];
+      const part = candidate?.content?.parts?.[0];
+      const chunkText = chunk.text || part?.text || '';
       accumulatedText += chunkText;
 
       if (chunk.usageMetadata) {
@@ -783,7 +789,19 @@ export async function* generateConsensusRecoveryStream(
             latency: 0 
         };
     } else if (errorContext && (errorContext.includes("API_KEY") || errorContext.includes("API key"))) {
-        yield { fullText: `**Configuration Error**: ${errorContext}`, done: true, latency: 0 };
+        let displayError = errorContext;
+        try {
+            const jsonMatch = errorContext.match(/\{.*\}/s);
+            if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]);
+                if (parsed.error && parsed.error.message) {
+                    displayError = parsed.error.message;
+                }
+            }
+        } catch (e) {
+            // parsing failed, use raw string
+        }
+        yield { fullText: `**Configuration Error**: ${displayError}`, done: true, latency: 0 };
     } else {
         yield { fullText: `**System Critical**: All redundancy layers failed.\n\n**Diagnostic Trace**:\n${errorContext || String(error)}`, done: true, latency: 0 };
     }
@@ -841,7 +859,9 @@ export async function* generateConsensusDebateStream(
     let totalTokens = 0;
 
     for await (const chunk of result) {
-      const chunkText = chunk.text || '';
+      const candidate = chunk.candidates?.[0];
+      const part = candidate?.content?.parts?.[0];
+      const chunkText = chunk.text || part?.text || '';
       accumulatedText += chunkText;
 
       if (chunk.usageMetadata) {
