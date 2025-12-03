@@ -12,26 +12,25 @@ vi.mock('../services/auth', () => ({
 describe('LoginPage Component', () => {
   it('renders the login form by default', () => {
     render(<LoginPage onLogin={() => {}} onGlitch={() => {}} />);
-    // ZYNC_OS is split into spans, so we check for the parts or use a custom matcher
-    expect(screen.getByAltText('ZyncAI')).toBeDefined();
-    expect(screen.getByPlaceholderText('USER@DOMAIN.EXT')).toBeDefined();
-    expect(screen.getByPlaceholderText('••••••')).toBeDefined();
-    expect(screen.getByText('INITIALIZE')).toBeDefined();
+    expect(screen.getByText('ZYNC')).toBeDefined();
+    expect(screen.getByPlaceholderText('name@example.com')).toBeDefined();
+    expect(screen.getByPlaceholderText('••••••••')).toBeDefined();
+    expect(screen.getByText('Sign In')).toBeDefined();
   });
 
   it('switches to signup mode', () => {
     render(<LoginPage onLogin={() => {}} onGlitch={() => {}} />);
-    const switchButton = screen.getByText('[ CREATE_NEW_UPLINK ]');
+    const switchButton = screen.getByText("Don't have an account? Sign up");
     fireEvent.click(switchButton);
     
-    expect(screen.getByPlaceholderText('ENTER_NAME')).toBeDefined();
-    expect(screen.getByText('ESTABLISH LINK')).toBeDefined();
+    expect(screen.getByPlaceholderText('Enter your name')).toBeDefined();
+    expect(screen.getByText('Create Account')).toBeDefined();
   });
 
   it('handles input changes', () => {
     render(<LoginPage onLogin={() => {}} onGlitch={() => {}} />);
-    const emailInput = screen.getByPlaceholderText('USER@DOMAIN.EXT') as HTMLInputElement;
-    const passwordInput = screen.getByPlaceholderText('••••••') as HTMLInputElement;
+    const emailInput = screen.getByPlaceholderText('name@example.com') as HTMLInputElement;
+    const passwordInput = screen.getByPlaceholderText('••••••••') as HTMLInputElement;
 
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
@@ -47,9 +46,9 @@ describe('LoginPage Component', () => {
 
     render(<LoginPage onLogin={onLoginMock} onGlitch={() => {}} />);
     
-    const emailInput = screen.getByPlaceholderText('USER@DOMAIN.EXT');
-    const passwordInput = screen.getByPlaceholderText('••••••');
-    const submitButton = screen.getByText('INITIALIZE');
+    const emailInput = screen.getByPlaceholderText('name@example.com');
+    const passwordInput = screen.getByPlaceholderText('••••••••');
+    const submitButton = screen.getByText('Sign In');
 
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
@@ -61,23 +60,22 @@ describe('LoginPage Component', () => {
     });
   });
 
-  it('triggers glitch on login failure', async () => {
-    const onGlitchMock = vi.fn();
+  it('displays error on login failure', async () => {
     // Mock failed login
     (authService.loginUser as any).mockResolvedValue({ error: 'Invalid credentials' });
 
-    render(<LoginPage onLogin={() => {}} onGlitch={onGlitchMock} />);
+    render(<LoginPage onLogin={() => {}} onGlitch={() => {}} />);
     
-    const emailInput = screen.getByPlaceholderText('USER@DOMAIN.EXT');
-    const passwordInput = screen.getByPlaceholderText('••••••');
-    const submitButton = screen.getByText('INITIALIZE');
+    const emailInput = screen.getByPlaceholderText('name@example.com');
+    const passwordInput = screen.getByPlaceholderText('••••••••');
+    const submitButton = screen.getByText('Sign In');
 
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(onGlitchMock).toHaveBeenCalledWith(true);
+      expect(screen.getByText('Invalid credentials')).toBeDefined();
     });
   });
 });

@@ -1357,8 +1357,30 @@ function App() {
         setIsExperimentLabOpen(true);
       },
       category: 'System'
+    },
+    {
+      id: 'open-memory-inspector',
+      label: 'Memory Inspector',
+      description: 'Visualize and manage long-term memory nodes.',
+      icon: <Layers size={18} />,
+      action: () => {
+        setIsPaletteOpen(false);
+        setIsMemoryInspectorOpen(true);
+      },
+      category: 'System'
+    },
+    {
+      id: 'toggle-dream-state',
+      label: isDreaming ? 'Wake System' : 'Enter Dream State',
+      description: isDreaming ? 'Exit generative idle mode.' : 'Initiate deep learning consolidation.',
+      icon: <Moon size={18} />,
+      action: () => {
+        setIsPaletteOpen(false);
+        handleDreamToggle();
+      },
+      category: 'System'
     }
-  ], [sessions, currentSession, isOfflineMode, isReflexActive, isMemoryActive, messages.length]);
+  ], [sessions, currentSession, isOfflineMode, isReflexActive, isMemoryActive, messages.length, isDreaming]);
 
   if (!isAuthenticated) {
     return (

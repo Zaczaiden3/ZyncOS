@@ -48,7 +48,7 @@ describe('SystemVisualizer', () => {
         isMemoryActive={false} 
       />
     );
-    expect(screen.getByText('Telemetry')).toBeInTheDocument();
+    expect(screen.getByText('System Status')).toBeInTheDocument();
     expect(screen.getByText('SYSTEM_IDLE')).toBeInTheDocument();
   });
 
@@ -60,8 +60,8 @@ describe('SystemVisualizer', () => {
         isMemoryActive={false} 
       />
     );
-    expect(screen.getByText('PROCESSING')).toBeInTheDocument();
-    expect(screen.getByText('REFLEX_CORE')).toBeInTheDocument();
+    expect(screen.getByText('Processing')).toBeInTheDocument();
+    expect(screen.getByText('Reflex Core')).toBeInTheDocument();
   });
 
   it('displays active status for Memory Core', () => {
@@ -72,8 +72,8 @@ describe('SystemVisualizer', () => {
         isMemoryActive={true} 
       />
     );
-    expect(screen.getByText('ANALYZING')).toBeInTheDocument();
-    expect(screen.getByText('MEMORY_CORE')).toBeInTheDocument();
+    expect(screen.getByText('Analyzing')).toBeInTheDocument();
+    expect(screen.getByText('Memory Core')).toBeInTheDocument();
   });
 
   it('renders token usage stats', () => {

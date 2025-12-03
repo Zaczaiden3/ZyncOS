@@ -148,5 +148,10 @@
   - [x] Add subtle animations to message bubbles and UI elements.
 
 - [x] **Code Quality**
+
   - [x] Resolve linting issues (inline styles in `WaveBackground.tsx`).
   - [x] Replace static logo with vector `ZyncLogo` component.
+
+- [x] **Health Check**
+  - [x] Run `npm run test` (All tests passing).
+  - [x] Run `npm run lint` (No issues found).
