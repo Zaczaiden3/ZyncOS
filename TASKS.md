@@ -176,4 +176,4 @@
 
 - [ ] **Final Polish**
   - [x] Conduct final end-to-end manual testing.
-  - [ ] Verify all documentation is up-to-date.
+  - [x] Verify all documentation is up-to-date.
