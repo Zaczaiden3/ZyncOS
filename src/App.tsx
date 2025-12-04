@@ -1192,6 +1192,17 @@ function App() {
 
     // --- System Tools ---
     {
+      id: 'open-settings',
+      label: 'System Settings',
+      description: 'Configure voice, display, and safety preferences.',
+      icon: <Settings size={18} />,
+      action: () => {
+        setIsPaletteOpen(false);
+        setIsSettingsOpen(true);
+      },
+      category: 'System Tools'
+    },
+    {
       id: 'open-experiment-lab',
       label: 'Experiment Lab',
       description: 'Test personas and prompts in a controlled environment.',
