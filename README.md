@@ -15,6 +15,11 @@
   - **System Visualizer**: Live monitoring of AI confidence, token usage, and network latency.
   - **3D Lattice View**: Visual representation of the neural topology.
   - **Autonomic Ops**: Self-healing event log and error tracking.
+- **Live Voice Interface**: Real-time, low-latency voice-to-voice interaction powered by Gemini Multimodal Live API.
+- **Agentic Workflows**: Autonomous tool chaining and multi-step task execution.
+- **Research & Governance**:
+  - **Experiment Lab**: Controlled environment for persona simulation and prompt engineering.
+  - **Memory Inspector**: Visual tool to inspect, edit, and prune the topological memory graph.
 - **Offline Mode**: Fully functional offline chat using `Llama-3.2-1B` via MLC WebLLM (WebGPU).
 - **Dream State**: Background optimization of topological memory when idle.
 - **Wafe Design System**: A premium, glassmorphic UI with dynamic animations and deep aesthetic integration.
