@@ -19,7 +19,7 @@ interface CommandPaletteProps {
   commands: CommandOption[];
 }
 
-const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, commands }) => {
+const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, commands = [] }) => {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);

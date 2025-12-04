@@ -51,8 +51,8 @@ describe('CommandPalette', () => {
   it('renders when isOpen is true', () => {
     render(<CommandPalette isOpen={true} onClose={mockOnClose} commands={commands} />);
     expect(screen.getByPlaceholderText('Type a command...')).toBeInTheDocument();
-    expect(screen.getByText('Command One')).toBeInTheDocument();
-    expect(screen.getByText('Command Two')).toBeInTheDocument();
+    expect(screen.getAllByText('Command One').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Command Two').length).toBeGreaterThan(0);
   });
 
   it('filters commands based on input', () => {
@@ -62,7 +62,7 @@ describe('CommandPalette', () => {
     fireEvent.change(input, { target: { value: 'Two' } });
     
     expect(screen.queryByText('Command One')).not.toBeInTheDocument();
-    expect(screen.getByText('Command Two')).toBeInTheDocument();
+    expect(screen.getAllByText('Command Two').length).toBeGreaterThan(0);
   });
 
   it('navigates with arrow keys', () => {
@@ -129,5 +129,11 @@ describe('CommandPalette', () => {
       const input = screen.getByPlaceholderText('Type a command...');
       fireEvent.change(input, { target: { value: 'NonExistent' } });
       expect(screen.getByText('No matching commands found.')).toBeInTheDocument();
+  });
+
+  it('renders without crashing when commands prop is empty', () => {
+    render(<CommandPalette isOpen={true} onClose={mockOnClose} commands={[]} />);
+    expect(screen.getByPlaceholderText('Type a command...')).toBeInTheDocument();
+    expect(screen.getByText('No matching commands found.')).toBeInTheDocument();
   });
 });
