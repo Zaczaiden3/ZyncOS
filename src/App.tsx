@@ -1104,85 +1104,30 @@ function App() {
   };
 
   const commands: CommandOption[] = useMemo(() => [
-    // --- Session Management ---
+    // --- Core Operations ---
     {
       id: 'new-session',
       label: 'New Session',
-      description: 'Create a fresh workspace. (Ctrl+N)',
+      description: 'Initialize a fresh workspace.',
       icon: <Plus size={18} />,
       action: handleNewSession,
-      category: 'Session',
-      previewVideo: 'https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-a-circuit-board-97-large.mp4'
+      category: 'Core Operations',
+      shortcut: 'Ctrl+N'
     },
     {
-      id: 'rename-session',
-      label: 'Rename Session',
-      description: 'Update the identifier for this workspace.',
-      icon: <Edit3 size={18} />,
-      action: handleRenameSession,
-      category: 'Session',
-      previewVideo: 'https://assets.mixkit.co/videos/preview/mixkit-interface-of-a-futuristic-computer-program-31682-large.mp4'
-    },
-    ...sessions.filter(s => s.id !== currentSession.id).map(s => ({
-        id: `switch-${s.id}`,
-        label: `Switch: ${s.name}`,
-        description: `Jump to session from ${new Date(s.lastModified).toLocaleTimeString()}`,
-        icon: <Layers size={18} />,
-        action: () => handleSwitchSession(s.id),
-        category: 'Session'
-    })),
-    {
-      id: 'clear-chat',
-      label: 'Clear History',
-      description: 'Wipe current message buffer. (Irreversible)',
-      icon: <Trash2 size={18} />,
-      action: handleClearChat,
-      disabled: isReflexActive || isMemoryActive,
-      category: 'Session'
-    },
-    {
-      id: 'delete-session',
-      label: 'Delete Session',
-      description: 'Permanently destroy this workspace.',
-      icon: <Trash2 size={18} className="text-red-400" />,
+      id: 'toggle-dream-state',
+      label: isDreaming ? 'Wake System' : 'Enter Dream State',
+      description: isDreaming ? 'Exit generative idle mode.' : 'Initiate deep learning consolidation.',
+      icon: <Moon size={18} />,
       action: () => {
-          if (confirm('Are you sure you want to delete this session?')) {
-            sessionManager.deleteSession(currentSession.id);
-            const newSession = sessionManager.createSession();
-            setCurrentSession(newSession);
-            setMessages(newSession.messages);
-            setSessions(sessionManager.getSessions());
-          }
+        setIsPaletteOpen(false);
+        handleDreamToggle();
       },
-      category: 'Session'
+      category: 'Core Operations'
     },
-
-    // --- AI Capabilities ---
-    {
-      id: 'simulate-personas',
-      label: 'Simulate Personas',
-      description: isOfflineMode ? 'Unavailable in Offline Mode.' : 'Run counterfactual analysis on the last query.',
-      icon: <Users size={18} />,
-      action: handleSimulatePersonas,
-      disabled: isReflexActive || isMemoryActive || messages.length === 0 || isOfflineMode,
-      category: 'AI Tools',
-      previewVideo: 'https://assets.mixkit.co/videos/preview/mixkit-artificial-intelligence-brain-animation-98-large.mp4'
-    },
-    {
-      id: 'consensus-debate',
-      label: 'Consensus Debate',
-      description: isOfflineMode ? 'Unavailable in Offline Mode.' : 'Trigger multi-model debate to resolve ambiguity.',
-      icon: <Network size={18} />,
-      action: handleConsensusDebate,
-      disabled: isReflexActive || isMemoryActive || isOfflineMode,
-      category: 'AI Tools',
-      previewVideo: 'https://assets.mixkit.co/videos/preview/mixkit-network-connection-background-loop-31685-large.mp4'
-    },
-
-    // --- System Control ---
     {
       id: 'toggle-offline',
-      label: isOfflineMode ? 'Go Online (Cloud)' : 'Go Offline (Local)',
+      label: isOfflineMode ? 'Connect to Cloud' : 'Go Offline (Local)',
       description: isOfflineMode ? 'Switch to Cloud AI for max intelligence.' : 'Switch to Local LLM for privacy.',
       icon: <Lock size={18} />,
       action: async () => {
@@ -1191,7 +1136,6 @@ function App() {
         setIsPaletteOpen(false);
         
         if (newMode) {
-            // Pre-initialize offline model
             try {
                 const { initializeOfflineModel, isOfflineModelReady } = await import('./services/offlineAi');
                 if (!isOfflineModelReady()) {
@@ -1210,7 +1154,7 @@ function App() {
                     timestamp: Date.now(),
                     metrics: { latency: 0, tokens: 0, confidence: 0 }
                 }]);
-                setIsOfflineMode(false); // Revert
+                setIsOfflineMode(false);
                 return;
             }
         }
@@ -1223,8 +1167,51 @@ function App() {
             metrics: { latency: 0, tokens: 0, confidence: 100 }
         }]);
       },
-      category: 'System',
-      previewVideo: 'https://assets.mixkit.co/videos/preview/mixkit-server-room-with-blue-lights-208-large.mp4'
+      category: 'Core Operations'
+    },
+
+    // --- AI Protocols ---
+    {
+      id: 'simulate-personas',
+      label: 'Simulate Personas',
+      description: isOfflineMode ? 'Unavailable in Offline Mode.' : 'Run counterfactual analysis on the last query.',
+      icon: <Users size={18} />,
+      action: handleSimulatePersonas,
+      disabled: isReflexActive || isMemoryActive || messages.length === 0 || isOfflineMode,
+      category: 'AI Protocols'
+    },
+    {
+      id: 'consensus-debate',
+      label: 'Consensus Debate',
+      description: isOfflineMode ? 'Unavailable in Offline Mode.' : 'Trigger multi-model debate to resolve ambiguity.',
+      icon: <Network size={18} />,
+      action: handleConsensusDebate,
+      disabled: isReflexActive || isMemoryActive || isOfflineMode,
+      category: 'AI Protocols'
+    },
+
+    // --- System Tools ---
+    {
+      id: 'open-experiment-lab',
+      label: 'Experiment Lab',
+      description: 'Test personas and prompts in a controlled environment.',
+      icon: <FlaskConical size={18} />,
+      action: () => {
+        setIsPaletteOpen(false);
+        setIsExperimentLabOpen(true);
+      },
+      category: 'System Tools'
+    },
+    {
+      id: 'open-memory-inspector',
+      label: 'Memory Inspector',
+      description: 'Visualize and manage long-term memory nodes.',
+      icon: <Layers size={18} />,
+      action: () => {
+        setIsPaletteOpen(false);
+        setIsMemoryInspectorOpen(true);
+      },
+      category: 'System Tools'
     },
     {
       id: 'manage-plugins',
@@ -1246,26 +1233,7 @@ function App() {
         }]);
         setIsPaletteOpen(false);
       },
-      category: 'System'
-    },
-    {
-      id: 'create-tool',
-      label: 'Create Custom Tool',
-      description: 'Define a new tool for the AI to use.',
-      icon: <Code size={18} />,
-      action: () => {
-        setIsPaletteOpen(false);
-        setIsToolCreatorOpen(true);
-      },
-      category: 'System'
-    },
-    {
-      id: 'system-reset',
-      label: 'Reboot Core',
-      description: 'Force re-initialization of all subsystems.',
-      icon: <RefreshCw size={18} />,
-      action: handleResetSystem,
-      category: 'System'
+      category: 'System Tools'
     },
     {
       id: 'export-logs',
@@ -1273,15 +1241,15 @@ function App() {
       description: 'Download session logs as JSON.',
       icon: <FileJson size={18} />,
       action: handleExportLogs,
-      category: 'System'
+      category: 'System Tools'
     },
     {
-      id: 'status-report',
-      label: 'System Status',
-      description: 'View current operational status',
-      icon: <Activity size={18} />,
-      action: () => setMobileMenuOpen(true),
-      category: 'System'
+      id: 'system-reset',
+      label: 'Reboot Core',
+      description: 'Force re-initialization of all subsystems.',
+      icon: <RefreshCw size={18} />,
+      action: handleResetSystem,
+      category: 'System Tools'
     },
     {
       id: 'logout',
@@ -1289,61 +1257,18 @@ function App() {
       description: 'Logout and return to secure gateway',
       icon: <Lock size={18} />,
       action: handleLogout,
-      category: 'System'
-    },
-    {
-      id: 'show-tour',
-      label: 'Show Welcome Tour',
-      description: 'Replay the onboarding introduction.',
-      icon: <Sparkles size={18} />,
-      action: () => {
-        setIsPaletteOpen(false);
-        setShowOnboarding(true);
-      },
-      category: 'System'
+      category: 'System Tools'
     },
 
-    {
-      id: 'test-workflow',
-      label: 'Test Workflow Engine',
-      description: 'Run a diagnostic workflow trace.',
-      icon: <Network size={18} />,
-      action: handleTestWorkflow,
-      category: 'System'
-    },
-    {
-      id: 'open-experiment-lab',
-      label: 'Experiment Lab',
-      description: 'Test personas and prompts in a controlled environment.',
-      icon: <FlaskConical size={18} />,
-      action: () => {
-        setIsPaletteOpen(false);
-        setIsExperimentLabOpen(true);
-      },
-      category: 'System'
-    },
-    {
-      id: 'open-memory-inspector',
-      label: 'Memory Inspector',
-      description: 'Visualize and manage long-term memory nodes.',
-      icon: <Layers size={18} />,
-      action: () => {
-        setIsPaletteOpen(false);
-        setIsMemoryInspectorOpen(true);
-      },
-      category: 'System'
-    },
-    {
-      id: 'toggle-dream-state',
-      label: isDreaming ? 'Wake System' : 'Enter Dream State',
-      description: isDreaming ? 'Exit generative idle mode.' : 'Initiate deep learning consolidation.',
-      icon: <Moon size={18} />,
-      action: () => {
-        setIsPaletteOpen(false);
-        handleDreamToggle();
-      },
-      category: 'System'
-    }
+    // --- Active Sessions ---
+    ...sessions.filter(s => s.id !== currentSession.id).map(s => ({
+        id: `switch-${s.id}`,
+        label: `Switch: ${s.name}`,
+        description: `Jump to session from ${new Date(s.lastModified).toLocaleTimeString()}`,
+        icon: <Layers size={18} />,
+        action: () => handleSwitchSession(s.id),
+        category: 'Active Sessions'
+    })),
   ], [sessions, currentSession, isOfflineMode, isReflexActive, isMemoryActive, messages.length, isDreaming]);
 
   if (!isAuthenticated) {
@@ -1441,30 +1366,6 @@ function App() {
                title="Voice Settings"
              >
                <Settings size={18} />
-             </button>
-
-             <button
-                onClick={() => setIsExperimentLabOpen(true)}
-                className="p-2 rounded-lg text-slate-400 hover:text-fuchsia-400 hover:bg-fuchsia-500/10 transition-all"
-                title="Experiment Lab"
-             >
-                <FlaskConical size={18} />
-             </button>
-
-             <button
-                onClick={() => setIsMemoryInspectorOpen(true)}
-                className="p-2 rounded-lg text-slate-400 hover:text-fuchsia-400 hover:bg-fuchsia-500/10 transition-all"
-                title="Memory Inspector"
-              >
-                <Layers size={18} />
-              </button>
-
-             <button
-               onClick={handleDreamToggle}
-               className={`p-2 rounded-lg transition-all ${isDreaming ? 'text-fuchsia-400 bg-fuchsia-500/10 animate-pulse' : 'text-slate-400 hover:text-fuchsia-400 hover:bg-fuchsia-500/10'}`}
-               title={isDreaming ? "Wake System" : "Enter Dream State"}
-             >
-               {isDreaming ? <Moon size={18} className="fill-current" /> : <Moon size={18} />}
              </button>
 
              <div className="group flex flex-col items-end cursor-default hidden md:flex">

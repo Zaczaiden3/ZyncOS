@@ -45,19 +45,19 @@ describe('CommandPalette', () => {
 
   it('does not render when isOpen is false', () => {
     render(<CommandPalette isOpen={false} onClose={mockOnClose} commands={commands} />);
-    expect(screen.queryByPlaceholderText('Type a command...')).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('What would you like to do?')).not.toBeInTheDocument();
   });
 
   it('renders when isOpen is true', () => {
     render(<CommandPalette isOpen={true} onClose={mockOnClose} commands={commands} />);
-    expect(screen.getByPlaceholderText('Type a command...')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('What would you like to do?')).toBeInTheDocument();
     expect(screen.getAllByText('Command One').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Command Two').length).toBeGreaterThan(0);
   });
 
   it('filters commands based on input', () => {
     render(<CommandPalette isOpen={true} onClose={mockOnClose} commands={commands} />);
-    const input = screen.getByPlaceholderText('Type a command...');
+    const input = screen.getByPlaceholderText('What would you like to do?');
     
     fireEvent.change(input, { target: { value: 'Two' } });
     
@@ -126,14 +126,14 @@ describe('CommandPalette', () => {
   
   it('handles empty filtered results', () => {
       render(<CommandPalette isOpen={true} onClose={mockOnClose} commands={commands} />);
-      const input = screen.getByPlaceholderText('Type a command...');
+      const input = screen.getByPlaceholderText('What would you like to do?');
       fireEvent.change(input, { target: { value: 'NonExistent' } });
-      expect(screen.getByText('No matching commands found.')).toBeInTheDocument();
+      expect(screen.getByText('No commands found')).toBeInTheDocument();
   });
 
   it('renders without crashing when commands prop is empty', () => {
     render(<CommandPalette isOpen={true} onClose={mockOnClose} commands={[]} />);
-    expect(screen.getByPlaceholderText('Type a command...')).toBeInTheDocument();
-    expect(screen.getByText('No matching commands found.')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('What would you like to do?')).toBeInTheDocument();
+    expect(screen.getByText('No commands found')).toBeInTheDocument();
   });
 });
