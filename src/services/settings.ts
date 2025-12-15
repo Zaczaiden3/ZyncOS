@@ -11,11 +11,11 @@ export interface AppSettings {
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
-  geminiApiKey: '',
-  openRouterApiKey: '',
-  reflexModel: 'google/gemini-2.0-flash-001',
-  memoryModel: 'google/gemini-2.0-flash-thinking-exp-01-21',
-  consensusModel: 'google/gemini-2.0-flash-001',
+  geminiApiKey: import.meta.env.VITE_GEMINI_API_KEY || '',
+  openRouterApiKey: import.meta.env.VITE_NVIDIA_KEY || import.meta.env.VITE_R1T_CHIMERA_KEY || '',
+  reflexModel: import.meta.env.VITE_REFLEX_MODEL || 'google/gemini-2.0-flash-001',
+  memoryModel: import.meta.env.VITE_MEMORY_MODEL || 'google/gemini-2.0-flash-thinking-exp-01-21',
+  consensusModel: import.meta.env.VITE_CONSENSUS_MODEL || 'google/gemini-2.0-flash-001',
   theme: 'dark',
   userRole: 'DEVELOPER',
   enablePIIMasking: false,

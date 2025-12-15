@@ -172,6 +172,7 @@
   - [x] Wrap event handlers in `useCallback` in `App.tsx`.
   - [x] Verify build and lint status after optimizations.
   - [x] **Voice I/O Enhancement**: Added auto-read responses, voice input cancellation, and improved voice settings.
+  - [x] **Smart Voice Input**: Implemented auto-submit on silence and forced voice response for hands-free interaction.
   - [x] **Real-time Voice Streaming**: Implemented Voice In + Voice Out using Gemini Multimodal Live API.
   - [x] **Live Mode UI Overhaul**: Redesigned Live Voice Interface with immersive animations and futuristic visualizer.
 

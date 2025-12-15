@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, ChevronRight, Zap, Brain, FlaskConical, Settings, Sparkles } from 'lucide-react';
 import './OnboardingTour.css';
+import onboardingHero from '../assets/onboarding-hero.png';
 
 interface OnboardingTourProps {
   onComplete: () => void;
@@ -11,7 +12,7 @@ const STEPS = [
     title: "Welcome to Zync AI",
     description: "Your advanced AI workspace for research, coding, and creative exploration. Zync combines multiple AI models into a single, cohesive interface.",
     icon: <Zap size={32} className="text-cyan-400" />,
-    image: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1000&auto=format&fit=crop"
+    image: onboardingHero
   },
   {
     title: "Dual Core Intelligence",
@@ -73,13 +74,13 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete }) => {
 
   return (
     <div 
-      className={`fixed inset-0 z-[100] flex items-center justify-center transition-all duration-500 ${isVisible && !isExiting ? 'opacity-100 backdrop-blur-sm bg-black/60' : 'opacity-0 pointer-events-none'}`}
+      className={`fixed inset-0 z-[100] flex items-center justify-center transition-all duration-500 ${isVisible && !isExiting ? 'opacity-100 backdrop-blur-md bg-black/70' : 'opacity-0 pointer-events-none'}`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="tour-title"
     >
       <div 
-        className={`w-full max-w-4xl h-[550px] flex rounded-3xl overflow-hidden shadow-2xl relative transition-all duration-700 transform onboarding-modal ${isVisible && !isExiting ? 'scale-100 translate-y-0' : 'scale-95 translate-y-8'}`}
+        className={`w-full max-w-5xl h-[600px] flex rounded-3xl overflow-hidden shadow-2xl relative transition-all duration-700 transform onboarding-modal ${isVisible && !isExiting ? 'scale-100 translate-y-0' : 'scale-95 translate-y-8'}`}
       >
         
         <button 
@@ -88,62 +89,62 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete }) => {
             title="Skip Tour"
             aria-label="Close tour"
         >
-            <X size={20} />
+            <X size={24} />
         </button>
 
         {/* Left Side - Image & Visuals */}
-        <div className="w-5/12 relative overflow-hidden bg-slate-900 hidden md:block group">
+        <div className="w-1/2 relative overflow-hidden bg-slate-900 hidden md:block group">
             {/* Background Image with Transition */}
             <div className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${animatingStep ? 'opacity-50' : 'opacity-100'}`}>
                <img 
                 src={STEPS[currentStep].image} 
                 alt={STEPS[currentStep].title}
-                className="w-full h-full object-cover opacity-80 transition-transform duration-[2000ms] ease-out transform group-hover:scale-110"
+                className="w-full h-full object-cover opacity-90 transition-transform duration-[3000ms] ease-out transform group-hover:scale-105"
                />
             </div>
             
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-90"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-900/20 to-slate-900/80"></div>
+            {/* Gradient Overlay - Enhanced for text readability and mood */}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/20 to-transparent opacity-80"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/10 to-slate-900/60"></div>
 
             {/* Floating Icon */}
-            <div className="absolute bottom-10 left-10 z-20">
-                <div className={`p-4 bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-white/10 shadow-xl transition-all duration-500 transform ${animatingStep ? 'translate-y-4 opacity-0' : 'translate-y-0 opacity-100'}`}>
+            <div className="absolute bottom-12 left-12 z-20">
+                <div className={`p-5 bg-slate-900/60 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl transition-all duration-500 transform ${animatingStep ? 'translate-y-4 opacity-0' : 'translate-y-0 opacity-100'}`}>
                     {STEPS[currentStep].icon}
                 </div>
             </div>
             
             {/* Decorative Elements */}
             <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-                <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute bottom-1/3 right-1/4 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl animate-pulse onboarding-decoration-delay"></div>
+                <div className="absolute top-1/4 left-1/4 w-48 h-48 bg-cyan-500/10 rounded-full blur-[100px] animate-pulse"></div>
+                <div className="absolute bottom-1/3 right-1/4 w-64 h-64 bg-purple-500/10 rounded-full blur-[100px] animate-pulse onboarding-decoration-delay"></div>
             </div>
         </div>
 
         {/* Right Side - Content */}
-        <div className="w-full md:w-7/12 p-10 flex flex-col justify-between relative bg-slate-900/50 backdrop-blur-sm">
+        <div className="w-full md:w-1/2 p-12 flex flex-col justify-between relative bg-slate-950/80 backdrop-blur-xl border-l border-white/5">
             
             {/* Progress Bar Top */}
-            <div className="w-full h-1 bg-slate-800/50 rounded-full mb-8 overflow-hidden">
+            <div className="w-full h-1.5 bg-slate-800/50 rounded-full mb-10 overflow-hidden">
                 <div 
-                    className={`h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500 ease-out rounded-full onboarding-progress-${Math.round(((currentStep + 1) / STEPS.length) * 100)}`}
+                    className={`h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-all duration-700 ease-out rounded-full onboarding-progress-${Math.round(((currentStep + 1) / STEPS.length) * 100)}`}
                 ></div>
             </div>
 
             <div className="flex-1 flex flex-col justify-center">
                 <div className={`transition-all duration-500 transform ${animatingStep ? 'translate-y-4 opacity-0' : 'translate-y-0 opacity-100'}`}>
-                    <div className="flex items-center gap-2 mb-4">
-                        <span className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-bold uppercase tracking-wider">
+                    <div className="flex items-center gap-3 mb-6">
+                        <span className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(34,211,238,0.2)]">
                             Step {currentStep + 1} of {STEPS.length}
                         </span>
                         {currentStep === 0 && (
                             <span className="flex items-center gap-1 text-amber-400 text-xs font-medium animate-pulse">
-                                <Sparkles size={12} /> New
+                                <Sparkles size={14} /> <span className="tracking-wide">NEW</span>
                             </span>
                         )}
                     </div>
                     
-                    <h2 id="tour-title" className="text-4xl font-bold text-white mb-6 leading-tight tracking-tight">
+                    <h2 id="tour-title" className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400 mb-6 leading-[1.1] tracking-tight">
                         {STEPS[currentStep].title}
                     </h2>
                     
@@ -154,9 +155,9 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete }) => {
             </div>
 
             {/* Footer Controls */}
-            <div className="flex items-center justify-between mt-8 pt-6 border-t border-white/5">
+            <div className="flex items-center justify-between mt-10 pt-8 border-t border-white/5">
                 {/* Dots */}
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                     {STEPS.map((_, idx) => (
                         <button
                             key={idx}
@@ -167,8 +168,8 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete }) => {
                                     setAnimatingStep(false);
                                 }, 300);
                             }}
-                            className={`h-2 rounded-full transition-all duration-300 ${
-                                idx === currentStep ? 'w-8 bg-cyan-500' : 'w-2 bg-slate-700 hover:bg-slate-600'
+                            className={`h-2 rounded-full transition-all duration-500 ${
+                                idx === currentStep ? 'w-10 bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]' : 'w-2 bg-slate-800 hover:bg-slate-700'
                             }`}
                             aria-label={`Go to step ${idx + 1}`}
                         />
@@ -186,7 +187,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete }) => {
                     )}
                     <button 
                         onClick={handleNext}
-                        className="group relative px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold transition-all shadow-lg shadow-cyan-900/20 hover:shadow-cyan-500/30 flex items-center gap-2 overflow-hidden"
+                        className="group relative px-8 py-3.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold transition-all shadow-lg shadow-cyan-900/20 hover:shadow-cyan-500/40 flex items-center gap-2 overflow-hidden"
                     >
                         <span className="relative z-10 flex items-center gap-2">
                             {currentStep === STEPS.length - 1 ? 'Get Started' : 'Next'}

@@ -134,6 +134,7 @@ function App() {
   const { speak, cancel: cancelTTS, isSpeaking: isTTSSpeaking, voices: ttsVoices } = useTextToSpeech();
   const { settings: voiceSettings, isMuted: isVoiceMuted } = useSpeechContext();
   const lastReadMessageId = useRef<string | null>(null);
+  const shouldAutoReadResponse = useRef(false);
 
   // Neuro-Symbolic State
   const [neuroTrace, setNeuroTrace] = useState<string | null>(null);
@@ -224,7 +225,8 @@ function App() {
 
   // Auto-Read Effect
   useEffect(() => {
-    if (!voiceSettings.autoRead || isVoiceMuted) return;
+    const shouldRead = (voiceSettings.autoRead || shouldAutoReadResponse.current) && !isVoiceMuted;
+    if (!shouldRead) return;
 
     const lastMsg = messages[messages.length - 1];
     if (!lastMsg || lastMsg.role === AIRole.USER) return;
@@ -233,6 +235,11 @@ function App() {
     if (systemStats.currentTask === 'SYSTEM_IDLE' && lastMsg.id !== lastReadMessageId.current) {
         lastReadMessageId.current = lastMsg.id;
         
+        // Reset the one-time voice trigger
+        if (shouldAutoReadResponse.current) {
+            shouldAutoReadResponse.current = false;
+        }
+
         const selectedVoice = ttsVoices.find(v => v.voiceURI === voiceSettings.voiceURI);
         
         speak(lastMsg.text, {
@@ -466,10 +473,7 @@ function App() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // Voice Input Handler
-  const handleVoiceTranscript = (text: string) => {
-      setInput(text);
-  };
+
 
   // Command Actions
   const handleClearChat = React.useCallback(() => {
@@ -1097,6 +1101,20 @@ function App() {
     setIsAtBottom(true);
     
     await processUserMessage(userText, userImage, userAttachmentType);
+  };
+
+  // Voice Input Handler (Auto-Submit)
+  const handleVoiceTranscript = (text: string) => {
+      setInput(text);
+      
+      if (text.trim()) {
+          shouldAutoReadResponse.current = true;
+          processUserMessage(text, selectedImage, attachmentType);
+          
+          setInput('');
+          clearImage();
+          setIsAtBottom(true);
+      }
   };
   const handleScroll = () => {
     if (messagesContainerRef.current) {
